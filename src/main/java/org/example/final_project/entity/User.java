@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Builder
@@ -23,7 +23,7 @@ import java.util.List;
 @Table(name = "user")
 @Getter
 @Setter
-public class User extends BaseEntity {
+public class User extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,14 +50,17 @@ public class User extends BaseEntity {
     @Column(name = "gender")
     private Boolean gender;
 
+    @Column(name = "country")
+    private String country;
+
     @NotNull(message = "Role ID cannot be null")
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserAuthentication authentication;
 
-
-//    public int isActive() {
-//        return this.isActive;
-//    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AccountSetting> accountSettings = new ArrayList<>();
 }

@@ -1,6 +1,7 @@
 package org.example.final_project.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
-public class Video {
+public class Video extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long videoId;
@@ -22,11 +23,22 @@ public class Video {
 
     String description;
 
-    String contentType;
-
     String videoUrl;
 
     double videoSize;
 
+    String contentType;
+
     String fileType;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
+
+    String videoScope;
+
+    String videoPath;
+
+
 }
