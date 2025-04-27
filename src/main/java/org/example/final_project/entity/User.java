@@ -1,5 +1,6 @@
 package org.example.final_project.entity;
 
+import aj.org.objectweb.asm.ConstantDynamic;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -53,14 +54,15 @@ public class User extends BaseEntity{
     @Column(name = "country")
     private String country;
 
-    @NotNull(message = "Role ID cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
-
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserAuthentication authentication;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AccountSetting> accountSettings = new ArrayList<>();
+
+    @NotNull(message = "Role ID cannot be null")
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
 }
