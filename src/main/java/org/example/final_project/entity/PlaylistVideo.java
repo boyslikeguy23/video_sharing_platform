@@ -25,5 +25,5 @@ public class PlaylistVideo extends BaseEntity {
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
-    private Integer orderIndex;
+    private Long orderIndex;
 }

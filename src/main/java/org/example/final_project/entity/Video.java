@@ -24,7 +24,7 @@ public class Video extends BaseEntity {
 //    @Column(nullable = false)
 //    private String title;
 
-    private String description;
+    private String caption;
 
     @Column(nullable = false)
     private String videoUrl;
