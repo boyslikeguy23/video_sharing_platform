@@ -1,31 +1,29 @@
 package org.example.final_project.entity;
 
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "comment")
+@Table(name = "search_history")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment extends BaseEntity {
+public class SearchHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long commentId;
-
-    @NotNull
-    @Column(nullable = false)
-    private String content;
-
-    @ManyToOne
-    @JoinColumn(name = "video_id", nullable = false)
-    private Video video;
+    private Long searchHistoryId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    private String keyword;
+
+    private LocalDateTime searchDate;
 }

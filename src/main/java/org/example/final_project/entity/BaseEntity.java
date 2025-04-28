@@ -9,11 +9,9 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Data
+
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @MappedSuperclass
 public abstract class BaseEntity implements Serializable {
     @Column(name = "created_at")

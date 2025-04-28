@@ -1,25 +1,37 @@
 package org.example.final_project.entity;
 
-import jakarta.persistence.*;
 
-import java.util.ArrayList;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
 import java.util.List;
 
 @Entity
 @Table(name = "playlist")
-public class Playlist {
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Playlist extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "PlaylistID")
     private Long playlistId;
 
-    @Column(name = "PlaylistTitle", length = 255)
-    private String playlistTitle;
+    @NotNull
+    @Column(nullable = false)
+    private String title;
 
-    @Column(name = "UserID")
-    private Long userId;
+    private String description;
 
-    // Quan hệ với PlaylistVideo
-    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PlaylistVideo> playlistVideos = new ArrayList<>();
+    private String thumbnailUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL)
+    private List<PlaylistVideo> playlistVideos;
 }

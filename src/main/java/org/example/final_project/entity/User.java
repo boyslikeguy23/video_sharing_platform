@@ -1,68 +1,62 @@
 package org.example.final_project.entity;
 
-import aj.org.objectweb.asm.ConstantDynamic;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Table(name = "user")
+@Table(name = "user", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 @Getter
 @Setter
-public class User extends BaseEntity{
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
-    @Column(name = "full_name", length = 100, columnDefinition = "varchar(100) default ''")
-    private String fullName;
+    @Size(max = 50)
+    private String firstName;
 
-    @NotNull(message = "Email cannot be null")
-    @Email(message = "Email should be valid")
-    @Column(name = "email", length = 120, nullable = false, unique = true)
-    private String email;
+    @Size(max = 50)
+    private String lastName;
 
-    @Column(name = "date_of_birth", columnDefinition = "date")
-    private LocalDate dateOfBirth;
+    @Size(max = 15)
+    private String phone;
 
-
-    @Column(name = "address", length = 200, columnDefinition = "varchar(200) default ''")
+    @Size(max = 255)
     private String address;
 
-    @Column(name = "phone_number", length = 15, columnDefinition = "varchar(15) default ''")
-    private String phoneNumber;
+    @Email
+    @NotNull
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    @Column(name = "gender")
+    private LocalDateTime birthdate;
+
     private Boolean gender;
 
-    @Column(name = "country")
-    private String country;
+    private String avatarUrl;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserAuthentication authentication;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserAuthentication userAuthentication;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AccountSetting> accountSettings = new ArrayList<>();
+    @OneToMany(mappedBy = "createdByUser", cascade = CascadeType.ALL)
+    private List<Video> videos;
 
-    @NotNull(message = "Role ID cannot be null")
-    @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Playlist> playlists;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Notification> notifications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<SearchHistory> searchHistories;
 }
+

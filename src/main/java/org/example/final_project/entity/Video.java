@@ -3,42 +3,50 @@ package org.example.final_project.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "video")
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Video extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long videoId;
+    private Long videoId;
 
-    String title;
+//    @NotNull
+//    @Column(nullable = false)
+//    private String title;
 
-    String description;
+    private String description;
 
-    String videoUrl;
+    @Column(nullable = false)
+    private String videoUrl;
 
-    double videoSize;
+//    private String thumbnailUrl;
 
-    String contentType;
+//    private LocalDateTime publishDate;
 
-    String fileType;
-
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
-
-    String videoScope;
-
-    String videoPath;
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdByUser;
 
 
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL)
+    private List<Reaction> reactions;
+
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL)
+    private List<VideoViewHistory> viewHistories;
+
+    @OneToOne(mappedBy = "video", cascade = CascadeType.ALL)
+    private VideoCount videoCount;
 }

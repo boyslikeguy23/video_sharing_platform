@@ -1,29 +1,30 @@
 package org.example.final_project.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "playlist_video")
+@Table(name = "reaction", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "video_id"})
+})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaylistVideo extends BaseEntity {
+public class Reaction extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long playlistVideoId;
+    private Long reactionId;
 
     @ManyToOne
-    @JoinColumn(name = "playlist_id", nullable = false)
-    private Playlist playlist;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
-    private Integer orderIndex;
+    private Boolean isLike; // true = like, false = dislike
 }
