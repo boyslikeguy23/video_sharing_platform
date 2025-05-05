@@ -1,4 +1,4 @@
-package org.example.final_project.entity;
+package org.example.final_project.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +17,7 @@ public class Role {
 
     @Column(name = "name", nullable = false)
     private String name;
-
+    
     public static String ADMIN = "ADMIN";
     public static String USER = "USER";
 }

@@ -1,8 +1,7 @@
-package org.example.final_project.repository;
+package org.example.final_project.repositories;
 
-import org.example.final_project.entity.Video;
+import org.example.final_project.entities.Video;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 

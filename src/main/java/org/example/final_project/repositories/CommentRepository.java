@@ -1,6 +1,6 @@
-package org.example.final_project.repository;
+package org.example.final_project.repositories;
 
-import org.example.final_project.entity.Comment;
+import org.example.final_project.entities.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

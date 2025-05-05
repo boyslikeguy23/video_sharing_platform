@@ -1,4 +1,4 @@
-package org.example.final_project.entity;
+package org.example.final_project.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity {
+public class User extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +44,10 @@ public class User extends BaseEntity {
 
     private String avatarUrl;
 
+    @Column(nullable = false)
+    private boolean isActive = true;
+
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserAuthentication userAuthentication;
 
@@ -58,5 +62,11 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<SearchHistory> searchHistories;
+
+    @NotNull(message = "Role ID cannot be null")
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
 }
 

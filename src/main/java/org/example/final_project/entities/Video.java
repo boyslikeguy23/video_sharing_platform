@@ -1,10 +1,9 @@
-package org.example.final_project.entity;
+package org.example.final_project.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.example.final_project.enums.Privacy;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -32,6 +31,10 @@ public class Video extends BaseEntity {
 //    private String thumbnailUrl;
 
 //    private LocalDateTime publishDate;
+
+    @Column(name = "privacy", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Privacy privacy;
 
     @ManyToOne
     @JoinColumn(name = "created_by_user_id", nullable = false)
