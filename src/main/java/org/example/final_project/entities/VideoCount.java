@@ -14,13 +14,17 @@ public class VideoCount extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long countId;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
+    
+    private int viewCount;
+    private int likeCount;
+    private int dislikeCount;
 
-    private Long viewCount = 0L;
-    private Long likeCount = 0L;
-    private Long dislikeCount = 0L;
+    public VideoCount(int i, int i1, Video saved) {
+        super();
+    }
 }

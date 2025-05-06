@@ -13,6 +13,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+
 public class Video extends BaseEntity {
 
     @Id
@@ -39,7 +41,6 @@ public class Video extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdByUser;
-
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL)
     private List<Comment> comments;

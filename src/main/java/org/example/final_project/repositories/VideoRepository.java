@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
     List<Video> findByCaptionContaining(String keyword);
-    List<Video> findByUserUserId(Long userId);
+    List<Video> findAllByUserUserId(Long userId);
 }
