@@ -3,6 +3,8 @@ package org.example.final_project.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "role")
 @AllArgsConstructor
@@ -17,7 +19,9 @@ public class Role {
 
     @Column(name = "name", nullable = false)
     private String name;
-    
+
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+    private List<User> users;
 //    public static String ADMIN = "ADMIN";
 //    public static String USER = "USER";
 }
