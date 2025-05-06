@@ -10,12 +10,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Tìm user theo email
     Optional<User> findByEmail(String email);
 
-    // Tìm user theo full name (không bắt buộc unique)
-    List<User> findByFullNameContainingIgnoreCase(String fullName);
-
     // Check tồn tại email
     boolean existsByEmail(String email);
 
-    // Tìm theo phone number
-    Optional<User> findByPhoneNumber(String phoneNumber);
+    List<User> findByNickNameContainingIgnoreCase(String nickName);
+
+    List<User> findByFullNameContainingIgnoreCase(String fullName);
 }
+

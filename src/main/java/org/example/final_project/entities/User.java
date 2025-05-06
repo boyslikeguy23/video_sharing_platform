@@ -5,6 +5,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -15,58 +20,82 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity{
+public class User extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Size(max = 50)
-    private String firstName;
-
-    @Size(max = 50)
-    private String lastName;
-
-    @Size(max = 15)
-    private String phone;
-
-    @Size(max = 255)
-    private String address;
+    private Long id;
 
     @Email
     @NotNull
     @Column(nullable = false, unique = true)
     private String email;
 
-    private LocalDateTime birthdate;
+    @Size(max = 100)
+    private String fullName;
 
-    private Boolean gender;
+    @Size(max = 100)
+    private String nickName;
+
+    private String password;
+
+    @Size(max = 15)
+    private String phone;
+
+    private LocalDateTime dateOfBirth;
 
     private String avatarUrl;
 
     @Column(nullable = false)
     private boolean isActive = true;
 
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserAuthentication userAuthentication;
-
-    @OneToMany(mappedBy = "createdByUser", cascade = CascadeType.ALL)
-    private List<Video> videos;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Playlist> playlists;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Notification> notifications;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<SearchHistory> searchHistories;
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+//    private UserAuthentication userAuthentication;
 
     @NotNull(message = "Role ID cannot be null")
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @OneToMany(mappedBy = "createdByUser", cascade = CascadeType.ALL)
+    private List<Video> videos;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + getRole().getName()));
+    }
+    @Override
+    public String getUsername() {
+        return email;
+    }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return isActive();
+    }
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private List<Playlist> playlists;
+
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private List<Notification> notifications;
+//
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private List<SearchHistory> searchHistories;
+
+
 
 }
 
