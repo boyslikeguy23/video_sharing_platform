@@ -5,18 +5,18 @@ import lombok.*;
 
 @Entity
 @Table(name = "following", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"follower_id", "followed_id"})
+        @UniqueConstraint(columnNames = {"follower_id", "following_id"})
 })
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Following extends BaseEntity {
+public class Follow extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long followingId;
+    private Long followId;
 
     @ManyToOne
     @JoinColumn(name = "follower_id", nullable = false)
@@ -24,7 +24,7 @@ public class Following extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "followed_id", nullable = false)
-    private User followed;
+    private User following;
 }
 
 
