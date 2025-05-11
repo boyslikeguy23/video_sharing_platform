@@ -16,13 +16,36 @@ import java.util.UUID;
 @Slf4j
 public class FileServiceImpl implements FileService {
     @Override
-    public String uploadVideo(String path, MultipartFile video) {
-        String videoName = video.getOriginalFilename();
+    public String uploadImage(String path, MultipartFile image) {
+        String imageName = image.getOriginalFilename();
         String randomId = UUID.randomUUID().toString();
-        assert videoName != null;
-        String fileName = randomId.concat(videoName.substring(videoName.lastIndexOf(".")));
+        assert imageName != null;
+        String fileName = randomId.concat(imageName.substring(imageName.lastIndexOf(".")));
         String imagePath = path + File.separator + fileName;
-        if (this.checkFile(videoName)) {
+        if (this.checkFile(imageName)) {
+            try {
+                File file = new File(path);
+                if (!file.exists()) {
+                    file.mkdir();
+                }
+                Files.copy(image.getInputStream(), Paths.get(imagePath));
+            } catch (IOException e) {
+                log.info("Error Message {}", e.getMessage());
+                return null;
+            }
+            return fileName;
+        } else {
+            throw new ApiException("plz select only image type");
+        }
+    }
+    @Override
+    public String uploadVideo(String path, MultipartFile video) {
+        String imageName = video.getOriginalFilename();
+        String randomId = UUID.randomUUID().toString();
+        assert imageName != null;
+        String fileName = randomId.concat(imageName.substring(imageName.lastIndexOf(".")));
+        String imagePath = path + File.separator + fileName;
+        if (this.checkFile(imageName)) {
             try {
                 File file = new File(path);
                 if (!file.exists()) {
@@ -49,7 +72,7 @@ public class FileServiceImpl implements FileService {
             log.info("Error Message {}", e.getMessage());
         }
         //mimetype should be something like "image/png"
-        return mimetype != null && mimetype.split("/")[0].equals("video");
+        return mimetype != null && mimetype.split("/")[0].equals("image");
     }
 
     @Override
