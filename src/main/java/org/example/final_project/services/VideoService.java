@@ -6,15 +6,11 @@ import org.example.final_project.dtos.responses.VideoResponseDTO;
 import org.example.final_project.entities.User;
 import org.example.final_project.entities.Video;
 import org.example.final_project.entities.VideoCount;
-import org.example.final_project.repositories.UserRepository;
-import org.example.final_project.repositories.VideoCountRepository;
-import org.example.final_project.repositories.VideoRepository;
 import org.example.final_project.services.interfaces.IVideoService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
