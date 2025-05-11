@@ -90,7 +90,7 @@ public ResponseEntity<ApiResponse> uploadPost(
     }
 
     @PostMapping(value = "/upload/post/{postId}")
-    public ResponseEntity<Post> uploadImage(@RequestParam("image") MultipartFile multipartFile, @PathVariable Long postId) {
+    public ResponseEntity<Post> uploadVideo(@RequestParam("video") MultipartFile multipartFile, @PathVariable Long postId) {
         return ResponseEntity.ok(this.postService.uploadPost(multipartFile, postId));
     }
 

@@ -46,7 +46,7 @@ public class PostServiceImpl implements PostService {
     public void createPost(String caption, MultipartFile multipartFile, User user) {
         log.info("creating post{}",multipartFile.getOriginalFilename());
         Post post=new Post();
-        String postImageName=this.fileService.uploadImage("image/post/",multipartFile);
+        String postImageName=this.fileService.uploadVideo("image/post/",multipartFile);
         post.setCreatedAt(Instant.now());
         post.setCaption(caption);
         post.setUser(user);
