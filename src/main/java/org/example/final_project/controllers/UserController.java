@@ -1,70 +1,102 @@
 package org.example.final_project.controllers;
 
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import org.example.final_project.exception.ApiException;
-import org.example.final_project.model.User;
-import org.example.final_project.payloads.UpdateUserDetails;
-import org.example.final_project.payloads.UserDto;
+import org.example.final_project.exceptions.UserException;
+import org.example.final_project.models.User;
+import org.example.final_project.responses.MessageResponse;
 import org.example.final_project.services.UserService;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@AllArgsConstructor
 @RestController
-@RequestMapping("/inst/clone")
+@RequestMapping("/api/users")
 public class UserController {
+	
+	@Autowired
+	private UserService userService;
+	@GetMapping("id/{id}")
+	public ResponseEntity<User> findUserByIdHandler(@PathVariable Integer id) throws UserException {
+		
+		User user=userService.findUserById(id);
+		
+		return new ResponseEntity<User>(user,HttpStatus.OK);
+	}
+	
+	
+	@GetMapping("username/{username}")
+	public ResponseEntity<User> findByUsernameHandler(@PathVariable("username") String username) throws UserException{
+		User user = userService.findUserByUsername(username);
+		return new ResponseEntity<User>(user,HttpStatus.ACCEPTED);
+	}
+	
+	@PutMapping("/follow/{followUserId}")
+	public ResponseEntity<MessageResponse> followUserHandler(@RequestHeader("Authorization") String token, @PathVariable Integer followUserId) throws UserException{
+		User reqUser=userService.findUserProfile(token);
+		
+		String message=userService.followUser(reqUser.getId(), followUserId);
+		MessageResponse res=new MessageResponse(message);
+		return new ResponseEntity<MessageResponse>(res,HttpStatus.OK);
+	}
+	
+	@PutMapping("/unfollow/{unfollowUserId}")
+	public ResponseEntity<MessageResponse> unfollowUserHandler(@RequestHeader("Authorization") String token, @PathVariable Integer unfollowUserId) throws UserException{
+		
+		User reqUser=userService.findUserProfile(token);
+		
+		String message=userService.unfollowUser(reqUser.getId(), unfollowUserId);
+		MessageResponse res=new MessageResponse(message);
+		return new ResponseEntity<MessageResponse>(res,HttpStatus.OK);
+	}
+	
+	@GetMapping("/req")
+	public ResponseEntity<User> findUserProfileHandler(@RequestHeader("Authorization") String token) throws UserException{
+		
+		User user=userService.findUserProfile(token);
+		
+		
+		return new ResponseEntity<User>(user,HttpStatus.ACCEPTED);
+		
 
-    private final UserService userService;
+	}
+	
+	@GetMapping("/m/{userIds}")
+	public ResponseEntity<List<User>> findAllUsersByUserIdsHandler(@PathVariable List<Integer> userIds){
+		List<User> users=userService.findUsersByUserIds(userIds);
+		
+		System.out.println("userIds ------ "+userIds);
+		return new ResponseEntity<List<User>>(users,HttpStatus.ACCEPTED);
+		
+	}
+	
+	@GetMapping("/search")
+	public ResponseEntity<List<User>> searchUserHandler(@RequestParam("q")String query) throws UserException{
+		
+		List<User> users=userService.searchUser(query);
+		
+		return new ResponseEntity<List<User>>(users,HttpStatus.OK);
+	}
+	
+	@PutMapping("/account/edit")
+	public ResponseEntity<User> updateUser(@RequestHeader("Authorization") String token, @RequestBody User user) throws UserException{
+		
+		User reqUser=userService.findUserProfile(token);
+		User updatedUser=userService.updateUserDetails(user, reqUser);
+		
+		return new ResponseEntity<User>(updatedUser,HttpStatus.OK);
+		
+	}
 
-    @PutMapping("/update")
-    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UpdateUserDetails updateUserDetalis, @AuthenticationPrincipal User user) {
-        UserDto users;
-        try {
-            users = this.userService.updateUser(updateUserDetalis, user.getId());
-        } catch (Exception e) {
-            throw new ApiException(e.getMessage());
-        }
-        return ResponseEntity.ok(users);
-    }
+	@GetMapping("/populer")
+	public ResponseEntity<List<User>> populerUsersHandler(){
+		
+		List<User> populerUsers=userService.popularUser();
+		
+		return new ResponseEntity<List<User>>(populerUsers,HttpStatus.OK);
+		
+	}
 
-    @GetMapping("/all")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        return ResponseEntity.ok(this.userService.findAllUser());
-    }
-
-    @GetMapping("/current-user")
-    @Transactional
-    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(user);
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserDto> findById(@PathVariable Long userId) {
-        return ResponseEntity.ok(this.userService.findById(userId));
-    }
-
-    @PostMapping("/setProfilePitcher")
-    public ResponseEntity<UserDto> setProfilePitcher(@RequestParam("image") MultipartFile multipartFile, @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(this.userService.setProfilePitcher(multipartFile, user));
-    }
-
-    @GetMapping(value = "/user/profilePitcher", produces = MediaType.IMAGE_JPEG_VALUE)
-    public void serveUserProfilePitcher(HttpServletResponse response, @AuthenticationPrincipal User user) {
-        this.userService.serveUserProfilePitcher(response, user);
-    }
-
-    @GetMapping("/search/keyword/{keyword}")
-    public ResponseEntity<List<User>> searchUserWithKeyword(@PathVariable String keyword) {
-        List<User> users = this.userService.searchUsersByUsername(keyword);
-        return ResponseEntity.ok(users);
-    }
 }

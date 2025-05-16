@@ -1,113 +1,147 @@
 package org.example.final_project.controllers;
 
 
-
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.final_project.exception.ResourceNotFoundException;
-import org.example.final_project.model.Post;
-import org.example.final_project.model.User;
-import org.example.final_project.payloads.ApiResponse;
-import org.example.final_project.payloads.PostRequest;
-import org.example.final_project.repositories.UserRepo;
+import org.example.final_project.exceptions.PostException;
+import org.example.final_project.exceptions.UserException;
+import org.example.final_project.models.Post;
+import org.example.final_project.models.User;
+import org.example.final_project.responses.MessageResponse;
 import org.example.final_project.services.PostService;
-import org.springframework.http.MediaType;
+import org.example.final_project.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/inst/clone")
-@AllArgsConstructor
-@Slf4j
+@RequestMapping("/api/posts")
 public class PostController {
+	
+	@Autowired
+	private PostService postService;
+	
+	@Autowired
+	private UserService userService;
+	
+	@PostMapping("/create")
+	public ResponseEntity<Post> createPostHandler(@RequestBody Post post, @RequestHeader("Authorization") String token) throws UserException {
+		
+		System.out.println("create post ---- "+post.getCaption());
+		
+		User user=userService.findUserProfile(token);
+		
+		Post createdPost = postService.createPost(post, user.getId());
+		
+		return new ResponseEntity<Post>(createdPost, HttpStatus.CREATED);
+	}
+	
+	
+	
+	@GetMapping("/all/{userId}")
+	public ResponseEntity<List<Post>> findPostByUserIdHandler(@PathVariable("userId") Integer userId) throws UserException{
+		
+		List<Post> posts=postService.findPostByUserId(userId);
+		
+		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	}
+	
+	
+	
+	@GetMapping("/following/{userIds}")
+	public ResponseEntity<List<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Integer> userIds) throws PostException, UserException {
+		
+		System.out.println("post userIds ----- "+userIds);
+		List<Post> posts=postService.findAllPostByUserIds(userIds);
+		
+		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	}
+	
+	
+	@GetMapping("/")
+	public ResponseEntity<List<Post>> findAllPostHandler() throws PostException{
+		List<Post> posts=postService.findAllPost();
+		
+		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	}
+	
+	@GetMapping("/{postId\\d+}")
+	public ResponseEntity<Post> findPostByIdHandler(@PathVariable Integer postId) throws PostException{
+		Post post=postService.findePostById(postId);
+		
+		return new ResponseEntity<Post>(post,HttpStatus.OK);
+	}
+	
+	
+	@PutMapping("/like/{postId}")
+	public ResponseEntity<Post> likePostHandler(@PathVariable("postId") Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+		
+		User user=userService.findUserProfile(token);
+		
+		Post updatedPost=postService.likePost(postId, user.getId());
+		
+		return new ResponseEntity<Post>(updatedPost,HttpStatus.OK);
+		
+	}
+	
+	
+	@PutMapping("/unlike/{postId}")
+	public ResponseEntity<Post> unLikePostHandler(@PathVariable("postId") Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+		
+		User reqUser=userService.findUserProfile(token);
+		
+		Post updatedPost=postService.unLikePost(postId, reqUser.getId());
+		
+		return new ResponseEntity<Post>(updatedPost,HttpStatus.OK);
+				
+	}
+	
+	
+	@DeleteMapping("/delete/{postId}")
+	public ResponseEntity<MessageResponse> deletePostHandler(@PathVariable Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+		
+		User reqUser=userService.findUserProfile(token);
+		
+		String message=postService.deletePost(postId, reqUser.getId());
+		
+		MessageResponse res=new MessageResponse(message);
+		
+		return new ResponseEntity<MessageResponse> (res, HttpStatus.OK);
+		
+	}
+	
+	@PutMapping("/save_post/{postId}")
+	public ResponseEntity<MessageResponse> savedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Integer postId) throws UserException, PostException{
+		
+		User user =userService.findUserProfile(token);
+		String message=postService.savedPost(postId, user.getId());
+		MessageResponse res=new MessageResponse(message);
+		
+		return new ResponseEntity<>(res,HttpStatus.OK);
+	}
+	
+	@PutMapping("/unsave_post/{postId}")
+	public ResponseEntity<MessageResponse> unSavedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Integer postId) throws UserException, PostException{
+		
+		User user =userService.findUserProfile(token);
+		String message=postService.unSavePost(postId, user.getId());
+		MessageResponse res=new MessageResponse(message);
+		
+		return new ResponseEntity<>(res,HttpStatus.OK);
+	}
+	
+	@PutMapping("/edit")
+	public ResponseEntity<Post> editPostHandler(@RequestBody Post post, @RequestHeader("Authorization") String token) throws PostException, UserException{
 
-    private final PostService postService;
-    private final UserRepo userRepo;
+		System.out.println("create post ---- "+post.getCaption());
 
-//    @PostMapping("/upload/post")
-//    public ResponseEntity<ApiResponse> uploadPost(@RequestBody PostRequest postRequest, @AuthenticationPrincipal User user) {
-//        this.postService.createPost(postRequest, user);
-//        return ResponseEntity.ok(new ApiResponse("Post created successfully", true));
-//    }
-//
-//    @PostMapping("/upload/post")
-//    public ResponseEntity<ApiResponse> uploadPost(@RequestParam("post") String caption, @RequestParam("image") MultipartFile multipartFile, @AuthenticationPrincipal User user) {
-//        this.postService.createPost(caption, multipartFile, user);
-//        return ResponseEntity.ok(new ApiResponse("Post created successfully", true));
-//    }
-@PostMapping("/upload/post")
-public ResponseEntity<ApiResponse> uploadPost(
-        @RequestPart(value = "postRequest", required = false) PostRequest postRequest,
-        @RequestPart(value = "caption", required = false) String caption,
-        @RequestPart(value = "image", required = false) MultipartFile multipartFile,
-        @AuthenticationPrincipal User user) {
+		User user=userService.findUserProfile(token);
 
-    if (postRequest != null) {
-        this.postService.createPost(postRequest, user);
-    } else if (caption != null && multipartFile != null) {
-        this.postService.createPost(caption, multipartFile, user);
-    } else {
-        return ResponseEntity.badRequest().body(new ApiResponse("Invalid request", false));
-    }
-
-    return ResponseEntity.ok(new ApiResponse("Post created successfully", true));
-}
-
-    @DeleteMapping("/delete/post/{postId}")
-    public ResponseEntity<ApiResponse> deletePost(@PathVariable Long postId, @AuthenticationPrincipal User user) {
-        log.info("received a delete request for post id {} from user {}", postId, user);
-        if (this.postService.deletePost(postId, user)) {
-            return ResponseEntity.ok(new ApiResponse("Deleted successfully", this.postService.deletePost(postId, user)));
-        }
-        return ResponseEntity.internalServerError().body(new ApiResponse("Unsuccessfully Deleted", false));
-    }
-
-    @GetMapping("posts/user/{userId}")
-    public ResponseEntity<?> getUserPosts(@PathVariable Long userId) {
-        log.info("retrieving posts for user {}", userId);
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user", "id", userId));
-        List<Post> posts = this.postService.getAllUserPost(user);
-        log.info("found {} posts for user {}", posts.size(), user);
-        return ResponseEntity.ok(posts);
-    }
-
-    @GetMapping("/posts")
-    public ResponseEntity<?> getUserPosts(@AuthenticationPrincipal User user) {
-        log.info("retrieving posts for user {}", user);
-        List<Post> posts = this.postService.getAllUserPost(user);
-        log.info("found {} posts for user {}", posts.size(), user);
-        return ResponseEntity.ok(posts);
-    }
-
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<Post> findPostById(@PathVariable Long postId) {
-        return ResponseEntity.ok(this.postService.findById(postId));
-    }
-
-    @PostMapping(value = "/upload/post/{postId}")
-    public ResponseEntity<Post> uploadVideo(@RequestParam("video") MultipartFile multipartFile, @PathVariable Long postId) {
-        return ResponseEntity.ok(this.postService.uploadPost(multipartFile, postId));
-    }
-
-    @GetMapping(value = "/post/{postId}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public void servePostImages(HttpServletResponse response, @PathVariable Long postId) {
-        this.postService.servePostImages(response, postId);
-    }
-
-    @GetMapping(value = "/users/{userId}/posts", produces = MediaType.IMAGE_JPEG_VALUE)
-    public void serveUserPostImages(HttpServletResponse response, @PathVariable Long userId) {
-        this.postService.serveUserPostImages(response, userId);
-    }
-
-    @GetMapping(value = "/current-user/posts", produces = MediaType.IMAGE_JPEG_VALUE)
-    public void serveUserPostImages(HttpServletResponse response, @AuthenticationPrincipal User user) {
-        this.postService.serveUserPostImages(response, user);
-    }
-
+		//Post updatedPost = postService.createPost(post, user.getId());
+		Post updatedPost =postService.editPost(post, user.getId());
+		//MessageResponse res=new MessageResponse("Post Updated Succefully");
+		return new ResponseEntity<Post>(updatedPost,HttpStatus.OK);
+	}
 
 }

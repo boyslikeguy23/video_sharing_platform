@@ -1,31 +1,35 @@
 package org.example.final_project.services;
 
 
-import jakarta.servlet.http.HttpServletResponse;
-import org.example.final_project.model.User;
-import org.example.final_project.payloads.UpdateUserDetails;
-import org.example.final_project.payloads.UserDto;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+
+import org.example.final_project.exceptions.UserException;
+import org.example.final_project.models.User;
 
 import java.util.List;
 
-@Service
 public interface UserService {
-    UserDto registerUser(UserDto userDto);
+	
+	public User registerUser(User user) throws UserException;
+	
+	public User findUserById(Integer userId) throws UserException;
+	
+	public User findUserProfile(String token) throws UserException;
+	
+	public User findUserByUsername(String username) throws UserException;
+	
+	public String followUser(Integer reqUserId,Integer followUserId) throws UserException;
+	
+	public String unfollowUser(Integer reqUserId, Integer unfollowUserId) throws UserException; 
+	
+	public List<User> findUsersByUserIds(List<Integer> userIds);
+	
+	public List<User> searchUser(String query) throws UserException;
+	
+	public List<User> popularUser();
+	
+	
 
-    UserDto updateUser(UpdateUserDetails updateUserDetails, Long userId);
-
-    List<UserDto> findAllUser();
-
-    List<User> searchUsersByUsername(String username);
-
-    UserDto findById(Long userId);
-
-    User dtoToUser(UserDto userDto);
-    UserDto userToDto(User user);
-    UserDto setProfilePitcher(MultipartFile multipartFile,User user);
-
-   void serveUserProfilePitcher(HttpServletResponse response,User user);
-
+	public User updateUserDetails(User updatedUser, User existingUser) throws UserException;
+	
+	
 }
