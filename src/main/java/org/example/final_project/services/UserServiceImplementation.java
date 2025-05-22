@@ -12,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -256,6 +259,28 @@ public class UserServiceImplementation implements UserService {
 		
 		return repo.save(existingUser);
 		
+	}
+
+	public List<User> getFollowingUsers(Integer userId) {
+		User user = repo.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		Set<UserDto> following = user.getFollowing();
+		List<Integer> followingIds = following.stream()
+				.map(UserDto::getId)
+				.collect(Collectors.toList());
+		if (followingIds.isEmpty()) return new ArrayList<>();
+		return repo.findAllUserByUserIds(followingIds);
+	}
+
+	public List<User> getFollowerUsers(Integer userId) {
+		User user = repo.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		Set<UserDto> follower = user.getFollower();
+		List<Integer> followerIds = follower.stream()
+				.map(UserDto::getId)
+				.collect(Collectors.toList());
+		if (followerIds.isEmpty()) return new ArrayList<>();
+		return repo.findAllUserByUserIds(followerIds);
 	}
 
 

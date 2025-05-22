@@ -46,14 +46,14 @@ public class GlobleException {
 		return new ResponseEntity<ErrorDetails>(err,HttpStatus.BAD_REQUEST);
 		
 	}
-	@ExceptionHandler(ReeelException.class)
-	public ResponseEntity<ErrorDetails> ReelExceptionHandler(ReeelException ue, WebRequest req){
-		
-		ErrorDetails err= new ErrorDetails(ue.getMessage(),req.getDescription(false),LocalDateTime.now());
-		
-		return new ResponseEntity<ErrorDetails>(err,HttpStatus.BAD_REQUEST);
-		
-	}
+//	@ExceptionHandler(ReeelException.class)
+//	public ResponseEntity<ErrorDetails> ReelExceptionHandler(ReeelException ue, WebRequest req){
+//
+//		ErrorDetails err= new ErrorDetails(ue.getMessage(),req.getDescription(false),LocalDateTime.now());
+//
+//		return new ResponseEntity<ErrorDetails>(err,HttpStatus.BAD_REQUEST);
+//
+//	}
 	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorDetails> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException me){

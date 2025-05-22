@@ -26,8 +26,10 @@ public interface UserService {
 	public List<User> searchUser(String query) throws UserException;
 	
 	public List<User> popularUser();
-	
-	
+
+	public List<User> getFollowingUsers(Integer userId);
+
+	public List<User> getFollowerUsers(Integer userId);
 
 	public User updateUserDetails(User updatedUser, User existingUser) throws UserException;
 	

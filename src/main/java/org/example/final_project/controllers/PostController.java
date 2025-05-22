@@ -66,7 +66,7 @@ public class PostController {
 		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
 	}
 	
-	@GetMapping("/{postId\\d+}")
+	@GetMapping("/{postId}")
 	public ResponseEntity<Post> findPostByIdHandler(@PathVariable Integer postId) throws PostException{
 		Post post=postService.findePostById(postId);
 		
@@ -132,16 +132,10 @@ public class PostController {
 	}
 	
 	@PutMapping("/edit")
-	public ResponseEntity<Post> editPostHandler(@RequestBody Post post, @RequestHeader("Authorization") String token) throws PostException, UserException{
-
-		System.out.println("create post ---- "+post.getCaption());
-
-		User user=userService.findUserProfile(token);
-
-		//Post updatedPost = postService.createPost(post, user.getId());
-		Post updatedPost =postService.editPost(post, user.getId());
-		//MessageResponse res=new MessageResponse("Post Updated Succefully");
-		return new ResponseEntity<Post>(updatedPost,HttpStatus.OK);
+	public ResponseEntity<MessageResponse> editPostHandler(@RequestBody Post post) throws PostException{
+		postService.editPost(post, null);
+		MessageResponse res=new MessageResponse("Post Updated Succefully");
+		return new ResponseEntity<MessageResponse>(res,HttpStatus.OK);
 	}
 
 }

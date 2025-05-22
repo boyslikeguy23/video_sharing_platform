@@ -90,6 +90,16 @@ public class UserController {
 		
 	}
 
+	@GetMapping("/{id}/following")
+	public List<User> getFollowing(@PathVariable Integer id) {
+		return userService.getFollowingUsers(id);
+	}
+
+	@GetMapping("/{id}/follower")
+	public List<User> getFollowers(@PathVariable Integer id) {
+		return userService.getFollowerUsers(id);
+	}
+
 	@GetMapping("/populer")
 	public ResponseEntity<List<User>> populerUsersHandler(){
 		
