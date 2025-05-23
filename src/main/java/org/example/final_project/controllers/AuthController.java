@@ -33,7 +33,6 @@ public class AuthController {
 		    } catch (BadCredentialsException ex) {
 		        throw new BadCredentialsException("Invalid username or password");
 		    }
-	
 	}
 	@PostMapping("/signup")
 	public ResponseEntity<User> registerUserHandler(@RequestBody User user) throws UserException {

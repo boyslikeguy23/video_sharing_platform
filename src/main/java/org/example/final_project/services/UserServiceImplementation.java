@@ -120,7 +120,7 @@ public class UserServiceImplementation implements UserService {
 
 		
 		User unfollowUser=findUserById(unfollowUserId);
-		
+
 		System.out.println("unfollow user ---- "+unfollowUser.toString());
 		System.out.println("unfollow user's follower"+unfollowUser.getFollower().toString());
 		
@@ -143,9 +143,11 @@ public class UserServiceImplementation implements UserService {
 		
 		
 		unfollowUser.getFollower().remove(unfollow);
+		reqUser.getFollowing().remove(following);
 
 		repo.save(reqUser);
-		
+		repo.save(unfollowUser);
+
 //		User user= userService.findUserById(userId);
 //		UserDto userDto=new UserDto();
 //		

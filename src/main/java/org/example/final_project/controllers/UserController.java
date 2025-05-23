@@ -20,9 +20,7 @@ public class UserController {
 	private UserService userService;
 	@GetMapping("id/{id}")
 	public ResponseEntity<User> findUserByIdHandler(@PathVariable Integer id) throws UserException {
-		
 		User user=userService.findUserById(id);
-		
 		return new ResponseEntity<User>(user,HttpStatus.OK);
 	}
 	
@@ -36,7 +34,6 @@ public class UserController {
 	@PutMapping("/follow/{followUserId}")
 	public ResponseEntity<MessageResponse> followUserHandler(@RequestHeader("Authorization") String token, @PathVariable Integer followUserId) throws UserException{
 		User reqUser=userService.findUserProfile(token);
-		
 		String message=userService.followUser(reqUser.getId(), followUserId);
 		MessageResponse res=new MessageResponse(message);
 		return new ResponseEntity<MessageResponse>(res,HttpStatus.OK);

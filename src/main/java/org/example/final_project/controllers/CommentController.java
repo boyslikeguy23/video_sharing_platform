@@ -29,16 +29,10 @@ public class CommentController {
 	@PostMapping("/create/{postId}")
 	public ResponseEntity<Comments> createCommentHandler(@RequestBody Comments comment, @PathVariable("postId") Integer postId, @RequestHeader("Authorization")String token) throws PostException, UserException {
 		User user = userService.findUserProfile(token);
-		
 		Comments createdComment = commentService.createComment(comment, postId, user.getId());
-		
 		System.out.println("created comment c--- "+createdComment.getContent());
-		
 		return new ResponseEntity<Comments>(createdComment,HttpStatus.CREATED);
-		
 	}
-	
-	
 	@PutMapping("/like/{commentId}")
 	public ResponseEntity<Comments> likeCommentHandler(@PathVariable Integer commentId, @RequestHeader("Authorization")String token) throws UserException, CommentException {
 		System.out.println("----------- like comment id ---------- ");
