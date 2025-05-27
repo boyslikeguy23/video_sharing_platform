@@ -159,8 +159,38 @@ public class UserServiceImplementation implements UserService {
 //		post.getLikedByUsers().remove(userDto);
 		
 		return "you have unfollow "+unfollowUser.getUsername();
-		
 
+	}
+	@Override
+	public String removeFollower(Integer reqUserId, Integer followerUserId) throws UserException {
+		User reqUser = findUserById(reqUserId); // Người bị theo dõi (chính mình)
+		User followerUser = findUserById(followerUserId); // Người follower
+
+		// Tạo UserDto cho follower
+		UserDto followerDto = new UserDto();
+		followerDto.setEmail(followerUser.getEmail());
+		followerDto.setUsername(followerUser.getUsername());
+		followerDto.setId(followerUser.getId());
+		followerDto.setName(followerUser.getName());
+		followerDto.setUserImage(followerUser.getImage());
+
+		// Tạo UserDto cho following
+		UserDto followingDto = new UserDto();
+		followingDto.setEmail(reqUser.getEmail());
+		followingDto.setUsername(reqUser.getUsername());
+		followingDto.setId(reqUser.getId());
+		followingDto.setName(reqUser.getName());
+		followingDto.setUserImage(reqUser.getImage());
+
+		// Xoá follower khỏi danh sách follower của mình
+		reqUser.getFollower().remove(followerDto);
+		// Xoá mình khỏi danh sách following của người kia
+		followerUser.getFollowing().remove(followingDto);
+
+		repo.save(reqUser);
+		repo.save(followerUser);
+
+		return "Đã xoá người theo dõi " + followerUser.getUsername();
 	}
 
 

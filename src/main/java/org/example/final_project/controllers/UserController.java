@@ -48,6 +48,17 @@ public class UserController {
 		MessageResponse res=new MessageResponse(message);
 		return new ResponseEntity<MessageResponse>(res,HttpStatus.OK);
 	}
+
+	@PutMapping("/remove-follower/{followerUserId}")
+	public ResponseEntity<MessageResponse> removeFollowerHandler(
+			@RequestHeader("Authorization") String token,
+			@PathVariable Integer followerUserId) throws UserException {
+
+		User reqUser = userService.findUserProfile(token);
+		String message = userService.removeFollower(reqUser.getId(), followerUserId);
+		MessageResponse res = new MessageResponse(message);
+		return new ResponseEntity<>(res, HttpStatus.OK);
+	}
 	
 	@GetMapping("/req")
 	public ResponseEntity<User> findUserProfileHandler(@RequestHeader("Authorization") String token) throws UserException{

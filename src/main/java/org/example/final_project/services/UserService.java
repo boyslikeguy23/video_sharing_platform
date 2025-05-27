@@ -19,8 +19,10 @@ public interface UserService {
 	
 	public String followUser(Integer reqUserId,Integer followUserId) throws UserException;
 	
-	public String unfollowUser(Integer reqUserId, Integer unfollowUserId) throws UserException; 
-	
+	public String unfollowUser(Integer reqUserId, Integer unfollowUserId) throws UserException;
+
+	public String removeFollower(Integer reqUserId, Integer followerUserId) throws UserException;
+
 	public List<User> findUsersByUserIds(List<Integer> userIds);
 	
 	public List<User> searchUser(String query) throws UserException;
