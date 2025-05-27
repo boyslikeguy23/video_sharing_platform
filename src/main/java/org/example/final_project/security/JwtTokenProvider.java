@@ -6,12 +6,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.example.final_project.configs.SecurityContest;
 import org.example.final_project.models.User;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Service
+@Component  // thêm annotation này để chắc chắn
+
 public class JwtTokenProvider {
 	
 	public JwtTokenClaims getClaimsFromToken(String token) {
