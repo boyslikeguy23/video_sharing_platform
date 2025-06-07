@@ -6,6 +6,7 @@ import org.example.final_project.dtos.UserDto;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
 import org.example.final_project.models.User;
+import org.example.final_project.responses.MessageResponse;
 import org.example.final_project.services.ChatService;
 import org.example.final_project.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -97,5 +100,60 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/unread")
+    public ResponseEntity<List<ChatMessageResponse>> getUnreadMessages(
+            @RequestHeader("Authorization") String token) throws UserException {
 
+        User currentUser = userService.findUserProfile(token);
+        List<Message> unreadMessages = chatService.getUnreadMessages(currentUser.getId());
+
+        List<ChatMessageResponse> response = unreadMessages.stream()
+                .map(ChatMessageResponse::fromMessage)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/unread/count")
+    public ResponseEntity<Map<String, Object>> getUnreadMessageCounts(
+            @RequestHeader("Authorization") String token) throws UserException {
+
+        User currentUser = userService.findUserProfile(token);
+        List<Message> unreadMessages = chatService.getUnreadMessages(currentUser.getId());
+
+        // Count total unread messages
+        int totalUnread = unreadMessages.size();
+
+        // Count unread messages per sender
+        Map<Integer, Integer> unreadCountsBySender = new HashMap<>();
+        for (Message message : unreadMessages) {
+            Integer senderId = message.getSender().getId();
+            unreadCountsBySender.put(senderId, unreadCountsBySender.getOrDefault(senderId, 0) + 1);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalUnread", totalUnread);
+        response.put("unreadCountsBySender", unreadCountsBySender);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/read-all/{userId}")
+    public ResponseEntity<MessageResponse> markAllMessagesAsRead(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Integer userId) throws UserException {
+
+        User currentUser = userService.findUserProfile(token);
+        List<Message> conversation = chatService.getConversation(currentUser.getId(), userId);
+
+        // Mark all unread messages from the specified user as read
+        for (Message message : conversation) {
+            if (!message.isRead() && message.getSender().getId().equals(userId) && 
+                message.getReceiver().getId().equals(currentUser.getId())) {
+                chatService.markMessageAsRead(message.getId());
+            }
+        }
+
+        return ResponseEntity.ok(new MessageResponse("All messages marked as read"));
+    }
 }
