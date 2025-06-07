@@ -29,6 +29,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        System.out.println("WebSocketAuthInterceptor: preSend called");
+
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
@@ -36,34 +38,35 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             List<String> authorization = accessor.getNativeHeader("Authorization");
             if (authorization != null && !authorization.isEmpty()) {
                 String token = authorization.get(0);
-                // Xóa prefix "Bearer " nếu có
+                // test log
+                System.out.println("WebSocket CONNECT: token = " + token);
+
                 if (token.startsWith("Bearer ")) {
                     token = token.substring(7);
                 }
-
-                // Xác thực token
                 try {
-                    // Sử dụng getClaimsFromToken để verify và lấy thông tin từ token
                     JwtTokenClaims claims = jwtTokenProvider.getClaimsFromToken(token);
                     String email = claims.getUsername();
+                    
+                    System.out.println("WebSocket connect: token = " + token);
+                    System.out.println("WebSocket connect: email from token = " + email);
 
-                    // Lấy user ID từ email
                     Optional<User> userOpt = userRepository.findByEmail(email);
                     if (userOpt.isPresent()) {
                         final Integer userId = userOpt.get().getId();
+                        System.out.println("WebSocket connect: userId = " + userId);
 
                         accessor.setUser(new Principal() {
                             @Override
                             public String getName() {
-                                return userId.toString(); // Trả về ID thay vì email
+                                return userId.toString();
                             }
                         });
                     } else {
-                        // Không tìm thấy user
+                        System.out.println("WebSocket connect: user not found for email " + email);
                         return null;
                     }
                 } catch (Exception e) {
-                    // Token không hợp lệ hoặc hết hạn
                     System.out.println("Lỗi xác thực token: " + e.getMessage());
                     return null;
                 }

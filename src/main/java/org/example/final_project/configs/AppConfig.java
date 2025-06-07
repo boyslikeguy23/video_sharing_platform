@@ -22,7 +22,7 @@ import java.util.Collections;
 public class AppConfig {
 	
 	@Bean
-	public SecurityFilterChain securityConfigration(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityConfiguration(HttpSecurity http) throws Exception {
 		
 
 		
@@ -32,6 +32,16 @@ public class AppConfig {
 		.authorizeHttpRequests()
 		.requestMatchers(HttpMethod.POST,"/signup").permitAll()
 		.requestMatchers(HttpMethod.GET,"/api").permitAll()
+		.requestMatchers(
+			"/websocket_test_client.html",
+			"/static/**",
+			"/js/**",
+			"/css/**",
+			"/images/**",
+			"/ws/**",
+			"/ws",
+			"/favicon.io"
+		).permitAll()
 		.anyRequest().authenticated()
 		.and()
 		.addFilterAfter(new JwtGenratorFilter(), BasicAuthenticationFilter.class)
