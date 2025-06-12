@@ -7,9 +7,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface StoryRepository extends JpaRepository<Story, Integer>{
-	
+public interface StoryRepository extends JpaRepository<Story, Long>{
+
 	@Query("SELECT s FROM Story s WHERE s.userDto.id = :userId")
-    List<Story> findAllStoriesByUserId(@Param("userId") Integer userId);
+    List<Story> findAllStoriesByUserId(@Param("userId") Long userId);
 
 }

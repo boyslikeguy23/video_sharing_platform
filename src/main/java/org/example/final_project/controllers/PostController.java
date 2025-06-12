@@ -40,7 +40,7 @@ public class PostController {
 
 
 	@GetMapping("/all/{userId}")
-	public ResponseEntity<List<Post>> findPostByUserIdHandler(@PathVariable("userId") Integer userId) throws UserException{
+	public ResponseEntity<List<Post>> findPostByUserIdHandler(@PathVariable("userId") Long userId) throws UserException{
 
 		List<Post> posts=postService.findPostByUserId(userId);
 
@@ -50,7 +50,7 @@ public class PostController {
 
 
 	@GetMapping("/following/{userIds}")
-	public ResponseEntity<List<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Integer> userIds) throws PostException, UserException {
+	public ResponseEntity<List<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Long> userIds) throws PostException, UserException {
 
 		System.out.println("post userIds ----- "+userIds);
 		List<Post> posts=postService.findAllPostByUserIds(userIds);
@@ -67,7 +67,7 @@ public class PostController {
 	}
 
 	@GetMapping("/{postId}")
-	public ResponseEntity<Post> findPostByIdHandler(@PathVariable Integer postId) throws PostException{
+	public ResponseEntity<Post> findPostByIdHandler(@PathVariable Long postId) throws PostException{
 		Post post=postService.findePostById(postId);
 
 		return new ResponseEntity<Post>(post,HttpStatus.OK);
@@ -75,7 +75,7 @@ public class PostController {
 
 
 	@PutMapping("/like/{postId}")
-	public ResponseEntity<Post> likePostHandler(@PathVariable("postId") Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+	public ResponseEntity<Post> likePostHandler(@PathVariable("postId") Long postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
 
 		User user=userService.findUserProfile(token);
 
@@ -87,7 +87,7 @@ public class PostController {
 
 
 	@PutMapping("/unlike/{postId}")
-	public ResponseEntity<Post> unLikePostHandler(@PathVariable("postId") Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+	public ResponseEntity<Post> unLikePostHandler(@PathVariable("postId") Long postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
 
 		User reqUser=userService.findUserProfile(token);
 
@@ -99,7 +99,7 @@ public class PostController {
 
 
 	@DeleteMapping("/delete/{postId}")
-	public ResponseEntity<MessageResponse> deletePostHandler(@PathVariable Integer postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
+	public ResponseEntity<MessageResponse> deletePostHandler(@PathVariable Long postId, @RequestHeader("Authorization") String token) throws UserException, PostException{
 
 		User reqUser=userService.findUserProfile(token);
 
@@ -112,7 +112,7 @@ public class PostController {
 	}
 
 	@PutMapping("/save_post/{postId}")
-	public ResponseEntity<MessageResponse> savedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Integer postId) throws UserException, PostException{
+	public ResponseEntity<MessageResponse> savedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Long postId) throws UserException, PostException{
 
 		User user =userService.findUserProfile(token);
 		String message=postService.savedPost(postId, user.getId());
@@ -122,7 +122,7 @@ public class PostController {
 	}
 
 	@PutMapping("/unsave_post/{postId}")
-	public ResponseEntity<MessageResponse> unSavedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Integer postId) throws UserException, PostException{
+	public ResponseEntity<MessageResponse> unSavedPostHandler(@RequestHeader("Authorization")String token,@PathVariable Long postId) throws UserException, PostException{
 
 		User user =userService.findUserProfile(token);
 		String message=postService.unSavePost(postId, user.getId());

@@ -7,16 +7,16 @@ import org.example.final_project.models.User;
 import java.util.List;
 
 public interface ChatService {
-    Message sendMessage(Integer senderId, Integer receiverId, String content) throws UserException;
-    
-    List<Message> getConversation(Integer userId1, Integer userId2);
-    
-    List<User> getRecentChats(Integer userId);
-    
-    void markMessageAsRead(Integer messageId) throws UserException;
-    
-    void deleteMessage(Integer messageId, Integer userId) throws UserException;
+    Message sendMessage(Long senderId, Long receiverId, String content) throws UserException;
 
-    List<Message> getUnreadMessages(Integer userId);
+    List<Message> getConversation(Long userId1, Long userId2);
+
+    List<User> getRecentChats(Long userId);
+
+    void markMessageAsRead(Long messageId) throws UserException;
+
+    void deleteMessage(Long messageId, Long userId) throws UserException;
+
+    List<Message> getUnreadMessages(Long userId);
 
 }

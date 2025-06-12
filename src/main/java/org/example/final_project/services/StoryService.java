@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface StoryService {
 
-	public Story createStory(Story story, Integer userId) throws UserException;
+	public Story createStory(Story story, Long userId) throws UserException;
 	
-	public List<Story> findStoryByUserId(Integer userId) throws UserException, StoryException;
+	public List<Story> findStoryByUserId(Long userId) throws UserException, StoryException;
 	
 	
 }

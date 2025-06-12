@@ -11,15 +11,15 @@ import java.util.List;
 
 public interface CommentService {
 	
-	public Comments createComment(Comments comment, Integer postId, Integer userId) throws PostException, UserException;
+	public Comments createComment(Comments comment, Long postId, Long userId) throws PostException, UserException;
 
-	public Comments findCommentById(Integer commentId) throws CommentException;
-	public Comments likeComment(Integer CommentId,Integer userId) throws UserException, CommentException;
-	public Comments unlikeComment(Integer CommentId,Integer userId) throws UserException, CommentException;
+	public Comments findCommentById(Long commentId) throws CommentException;
+	public Comments likeComment(Long CommentId,Long userId) throws UserException, CommentException;
+	public Comments unlikeComment(Long CommentId,Long userId) throws UserException, CommentException;
 	
-	public String deleteCommentById(Integer commentId) throws CommentException;
+	public String deleteCommentById(Long commentId) throws CommentException;
 	
-	public String editComment(Comments comment, Integer commentId) throws CommentException;
+	public String editComment(Comments comment, Long commentId) throws CommentException;
 	
-	public List<Comments> findCommentByPostId(Integer postId)throws PostException;
+	public List<Comments> findCommentByPostId(Long postId)throws PostException;
 }

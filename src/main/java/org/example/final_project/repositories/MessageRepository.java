@@ -8,11 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface MessageRepository extends JpaRepository<Message, Integer>
+public interface MessageRepository extends JpaRepository<Message, Long>
 {
     @Query("SELECT m FROM Message m WHERE (m.sender.id = :userId1 AND m.receiver.id = :userId2) " +
             "OR (m.sender.id = :userId2 AND m.receiver.id = :userId1) ORDER BY m.sentAt")
-    List<Message> findConversation(@Param("userId1") Integer userId1, @Param("userId2") Integer userId2);
+    List<Message> findConversation(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 
 //    @Query("SELECT DISTINCT CASE " +
 //            "WHEN m.sender.id = :userId THEN m.receiver " +
@@ -26,15 +26,15 @@ public interface MessageRepository extends JpaRepository<Message, Integer>
 //            "FROM Message m " +
 //            "WHERE m.sender.id = :userId OR m.receiver.id = :userId " +
 //            "ORDER BY m.sentAt DESC")
-//    List<User> findRecentChatUsers(@Param("userId") Integer userId);
+//    List<User> findRecentChatUsers(@Param("userId") Long userId);
     @Query("SELECT DISTINCT m.receiver FROM Message m WHERE m.sender.id = :userId")
-    List<User> findReceiversBySender(@Param("userId") Integer userId);
+    List<User> findReceiversBySender(@Param("userId") Long userId);
 
     @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver.id = :userId")
-    List<User> findSendersByReceiver(@Param("userId") Integer userId);
+    List<User> findSendersByReceiver(@Param("userId") Long userId);
 
     @Query("SELECT m FROM Message m WHERE m.receiver.id = :userId AND m.read = false ORDER BY m.sentAt")
-    List<Message> findUnreadMessages(@Param("userId") Integer userId);
+    List<Message> findUnreadMessages(@Param("userId") Long userId);
 
 
 

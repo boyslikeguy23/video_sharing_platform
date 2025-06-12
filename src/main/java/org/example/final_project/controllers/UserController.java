@@ -19,7 +19,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	@GetMapping("id/{id}")
-	public ResponseEntity<User> findUserByIdHandler(@PathVariable Integer id) throws UserException {
+	public ResponseEntity<User> findUserByIdHandler(@PathVariable Long id) throws UserException {
 		User user=userService.findUserById(id);
 		return new ResponseEntity<User>(user,HttpStatus.OK);
 	}
@@ -32,7 +32,7 @@ public class UserController {
 	}
 	
 	@PutMapping("/follow/{followUserId}")
-	public ResponseEntity<MessageResponse> followUserHandler(@RequestHeader("Authorization") String token, @PathVariable Integer followUserId) throws UserException{
+	public ResponseEntity<MessageResponse> followUserHandler(@RequestHeader("Authorization") String token, @PathVariable Long followUserId) throws UserException{
 		User reqUser=userService.findUserProfile(token);
 		String message=userService.followUser(reqUser.getId(), followUserId);
 		MessageResponse res=new MessageResponse(message);
@@ -40,7 +40,7 @@ public class UserController {
 	}
 	
 	@PutMapping("/unfollow/{unfollowUserId}")
-	public ResponseEntity<MessageResponse> unfollowUserHandler(@RequestHeader("Authorization") String token, @PathVariable Integer unfollowUserId) throws UserException{
+	public ResponseEntity<MessageResponse> unfollowUserHandler(@RequestHeader("Authorization") String token, @PathVariable Long unfollowUserId) throws UserException{
 		
 		User reqUser=userService.findUserProfile(token);
 		
@@ -52,7 +52,7 @@ public class UserController {
 	@PutMapping("/remove-follower/{followerUserId}")
 	public ResponseEntity<MessageResponse> removeFollowerHandler(
 			@RequestHeader("Authorization") String token,
-			@PathVariable Integer followerUserId) throws UserException {
+			@PathVariable Long followerUserId) throws UserException {
 
 		User reqUser = userService.findUserProfile(token);
 		String message = userService.removeFollower(reqUser.getId(), followerUserId);
@@ -72,7 +72,7 @@ public class UserController {
 	}
 	
 	@GetMapping("/m/{userIds}")
-	public ResponseEntity<List<User>> findAllUsersByUserIdsHandler(@PathVariable List<Integer> userIds){
+	public ResponseEntity<List<User>> findAllUsersByUserIdsHandler(@PathVariable List<Long> userIds){
 		List<User> users=userService.findUsersByUserIds(userIds);
 		
 		System.out.println("userIds ------ "+userIds);
@@ -99,12 +99,12 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}/following")
-	public List<User> getFollowing(@PathVariable Integer id) {
+	public List<User> getFollowing(@PathVariable Long id) {
 		return userService.getFollowingUsers(id);
 	}
 
 	@GetMapping("/{id}/follower")
-	public List<User> getFollowers(@PathVariable Integer id) {
+	public List<User> getFollowers(@PathVariable Long id) {
 		return userService.getFollowerUsers(id);
 	}
 

@@ -12,7 +12,7 @@ public class Story {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 	
 	@NotNull
     @Embedded
@@ -33,7 +33,7 @@ public class Story {
 
 	
 
-	public Story(Integer id, @NotNull UserDto userDto, @NotNull String image, String captions,
+	public Story(Long id, @NotNull UserDto userDto, @NotNull String image, String captions,
 			LocalDateTime timestamp) {
 		super();
 		this.id = id;
@@ -45,11 +45,11 @@ public class Story {
 
 
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

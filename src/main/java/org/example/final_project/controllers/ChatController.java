@@ -47,7 +47,7 @@ public class ChatController {
     @GetMapping("/conversation/{userId}")
     public ResponseEntity<List<ChatMessageResponse>> getConversation(
             @RequestHeader("Authorization") String token,
-            @PathVariable Integer userId) throws UserException {
+            @PathVariable Long userId) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
         List<Message> messages = chatService.getConversation(currentUser.getId(), userId);
@@ -83,7 +83,7 @@ public class ChatController {
     @PutMapping("/messages/{messageId}/read")
     public ResponseEntity<Void> markMessageAsRead(
             @RequestHeader("Authorization") String token,
-            @PathVariable Integer messageId) throws UserException {
+            @PathVariable Long messageId) throws UserException {
 
         userService.findUserProfile(token); // Validate user
         chatService.markMessageAsRead(messageId);
@@ -93,7 +93,7 @@ public class ChatController {
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Void> deleteMessage(
             @RequestHeader("Authorization") String token,
-            @PathVariable Integer messageId) throws UserException {
+            @PathVariable Long messageId) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
         chatService.deleteMessage(messageId, currentUser.getId());
@@ -125,10 +125,10 @@ public class ChatController {
         int totalUnread = unreadMessages.size();
 
         // Count unread messages per sender
-        Map<Integer, Integer> unreadCountsBySender = new HashMap<>();
+        Map<Long, Long> unreadCountsBySender = new HashMap<>();
         for (Message message : unreadMessages) {
-            Integer senderId = message.getSender().getId();
-            unreadCountsBySender.put(senderId, unreadCountsBySender.getOrDefault(senderId, 0) + 1);
+            Long senderId = message.getSender().getId();
+            unreadCountsBySender.put(senderId, unreadCountsBySender.getOrDefault(senderId, (long)0) + 1);
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -141,7 +141,7 @@ public class ChatController {
     @PutMapping("/read-all/{userId}")
     public ResponseEntity<MessageResponse> markAllMessagesAsRead(
             @RequestHeader("Authorization") String token,
-            @PathVariable Integer userId) throws UserException {
+            @PathVariable Long userId) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
         List<Message> conversation = chatService.getConversation(currentUser.getId(), userId);

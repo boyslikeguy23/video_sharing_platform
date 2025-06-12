@@ -36,45 +36,47 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             // Lấy token từ header
             List<String> authorization = accessor.getNativeHeader("Authorization");
-            if (authorization != null && !authorization.isEmpty()) {
-                String token = authorization.get(0);
-                // test log
-                System.out.println("WebSocket CONNECT: token = " + token);
+            if (authorization == null || authorization.isEmpty()) {
+                System.out.println("WebSocket CONNECT: No Authorization header found");
+                return null; // Reject connection without Authorization header
+            }
 
-                if (token.startsWith("Bearer ")) {
-                    token = token.substring(7);
-                }
-                try {
-                    JwtTokenClaims claims = jwtTokenProvider.getClaimsFromToken(token);
-                    String email = claims.getUsername();
-                    
-                    System.out.println("WebSocket connect: token = " + token);
-                    System.out.println("WebSocket connect: email from token = " + email);
+            String token = authorization.get(0);
+            // test log
+            System.out.println("WebSocket CONNECT: token = " + token);
 
-                    Optional<User> userOpt = userRepository.findByEmail(email);
-                    if (userOpt.isPresent()) {
-                        final Integer userId = userOpt.get().getId();
-                        System.out.println("WebSocket connect: userId = " + userId);
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            try {
+                JwtTokenClaims claims = jwtTokenProvider.getClaimsFromToken(token);
+                String email = claims.getUsername();
 
-                        accessor.setUser(new Principal() {
-                            @Override
-                            public String getName() {
-                                return userId.toString();
-                            }
-                        });
-                    } else {
-                        System.out.println("WebSocket connect: user not found for email " + email);
-                        return null;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Lỗi xác thực token: " + e.getMessage());
+                System.out.println("WebSocket connect: token = " + token);
+                System.out.println("WebSocket connect: email from token = " + email);
+
+                Optional<User> userOpt = userRepository.findByEmail(email);
+                if (userOpt.isPresent()) {
+                    final Long userId = userOpt.get().getId();
+                    System.out.println("WebSocket connect: userId = " + userId);
+
+                    accessor.setUser(new Principal() {
+                        @Override
+                        public String getName() {
+                            return userId.toString();
+                        }
+                    });
+                } else {
+                    System.out.println("WebSocket connect: user not found for email " + email);
                     return null;
                 }
+            } catch (Exception e) {
+                System.out.println("Lỗi xác thực token: " + e.getMessage());
+                e.printStackTrace(); // Add stack trace for better debugging
+                return null;
             }
         }
         return message;
     }
 
 }
-
-

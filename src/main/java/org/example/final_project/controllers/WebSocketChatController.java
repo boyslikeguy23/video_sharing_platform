@@ -25,7 +25,7 @@ public class WebSocketChatController {
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload ChatMessageRequest chatMessage,
                             Principal principal) {
-        Integer senderId = Integer.valueOf(principal.getName());
+        Long senderId = Long.valueOf(principal.getName());
 
         try {
             Message savedMessage = chatService.sendMessage(

@@ -36,7 +36,7 @@ public class StoryController {
 	
 	
 	@GetMapping("/{userId}")
-	public ResponseEntity<List<Story>> findAllStoryByUserIdHandler(@PathVariable Integer userId) throws UserException, StoryException {
+	public ResponseEntity<List<Story>> findAllStoryByUserIdHandler(@PathVariable Long userId) throws UserException, StoryException {
 		
 		List<Story> stories= storyService.findStoryByUserId(userId);
 		

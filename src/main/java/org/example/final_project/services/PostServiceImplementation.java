@@ -33,7 +33,7 @@ public class PostServiceImplementation implements PostService {
 	
 	
 	@Override
-	public Post createPost(Post post, Integer userId) throws UserException {
+	public Post createPost(Post post, Long userId) throws UserException {
 		
 		User user = userService.findUserById(userId);
 		
@@ -57,7 +57,7 @@ public class PostServiceImplementation implements PostService {
 
 	
 	@Override
-	public List<Post> findPostByUserId(Integer userId) throws UserException {
+	public List<Post> findPostByUserId(Long userId) throws UserException {
 		
 		List<Post> posts=postRepo.findByUserId(userId);
 		if(posts.isEmpty()){
@@ -68,7 +68,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public Post findePostById(Integer postId) throws PostException {
+	public Post findePostById(Long postId) throws PostException {
 		Optional<Post> opt = postRepo.findById(postId);
 		if(opt.isPresent()) {
 			return opt.get();
@@ -88,7 +88,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public Post likePost(Integer postId, Integer userId) throws UserException, PostException  {
+	public Post likePost(Long postId, Long userId) throws UserException, PostException  {
 		// TODO Auto-generated method stub
 		
 		User user= userService.findUserById(userId);
@@ -111,7 +111,7 @@ public class PostServiceImplementation implements PostService {
 	}
 
 	@Override
-	public Post unLikePost(Integer postId, Integer userId) throws UserException, PostException  {
+	public Post unLikePost(Long postId, Long userId) throws UserException, PostException  {
 		// TODO Auto-generated method stub
 		
 		User user= userService.findUserById(userId);
@@ -133,7 +133,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public String deletePost(Integer postId, Integer userId) throws UserException, PostException {
+	public String deletePost(Long postId, Long userId) throws UserException, PostException {
 		// TODO Auto-generated method stub
 		
 		Post post =findePostById(postId);
@@ -154,7 +154,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public List<Post> findAllPostByUserIds(List<Integer> userIds) throws PostException, UserException {
+	public List<Post> findAllPostByUserIds(List<Long> userIds) throws PostException, UserException {
 		
 		
 		List<Post> posts= postRepo.findAllPostByUserIds(userIds);
@@ -169,7 +169,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public String savedPost(Integer postId, Integer userId) throws PostException, UserException {
+	public String savedPost(Long postId, Long userId) throws PostException, UserException {
 		
 		Post post=findePostById(postId);
 		User user=userService.findUserById(userId);
@@ -183,7 +183,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public String unSavePost(Integer postId, Integer userId) throws PostException, UserException {
+	public String unSavePost(Long postId, Long userId) throws PostException, UserException {
 		Post post=findePostById(postId);
 		User user=userService.findUserById(userId);
 		
@@ -197,7 +197,7 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public Post editPost(Post post, Integer userId) throws PostException {
+	public Post editPost(Post post, Long userId) throws PostException {
 		Post isPost=findePostById(post.getId());
 
 		if (!isPost.getUser().getId().equals(userId)) {

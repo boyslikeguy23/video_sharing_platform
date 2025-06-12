@@ -1,15 +1,15 @@
 package org.example.final_project.dtos;
 
 public class ChatMessageRequest {
-    private Integer receiverId;
+    private Long receiverId;
     private String content;
 
     // Getters and Setters
-    public Integer getReceiverId() {
+    public Long getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(Integer receiverId) {
+    public void setReceiverId(Long receiverId) {
         this.receiverId = receiverId;
     }
 

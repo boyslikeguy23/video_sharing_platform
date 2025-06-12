@@ -70,7 +70,7 @@ public class UserServiceImplementation implements UserService {
 
 	
 	@Override
-	public User findUserById(Integer userId) throws UserException {
+	public User findUserById(Long userId) throws UserException {
 		
 		Optional<User> opt =repo.findById(userId);
 		
@@ -85,7 +85,7 @@ public class UserServiceImplementation implements UserService {
 
 
 	@Override
-	public String followUser(Integer reqUserId, Integer followUserId) throws UserException {
+	public String followUser(Long reqUserId, Long followUserId) throws UserException {
 		User followUser=findUserById(followUserId);
 		User reqUser=findUserById(reqUserId);
 		
@@ -116,7 +116,7 @@ public class UserServiceImplementation implements UserService {
 
 
 	@Override
-	public String unfollowUser(Integer reqUserId, Integer unfollowUserId) throws UserException {
+	public String unfollowUser(Long reqUserId, Long unfollowUserId) throws UserException {
 
 		
 		User unfollowUser=findUserById(unfollowUserId);
@@ -162,7 +162,7 @@ public class UserServiceImplementation implements UserService {
 
 	}
 	@Override
-	public String removeFollower(Integer reqUserId, Integer followerUserId) throws UserException {
+	public String removeFollower(Long reqUserId, Long followerUserId) throws UserException {
 		User reqUser = findUserById(reqUserId); // Người bị theo dõi (chính mình)
 		User followerUser = findUserById(followerUserId); // Người follower
 
@@ -235,7 +235,7 @@ public class UserServiceImplementation implements UserService {
 
 
 	@Override
-	public List<User> findUsersByUserIds(List<Integer> userIds) {
+	public List<User> findUsersByUserIds(List<Long> userIds) {
 		List<User> users= repo.findAllUserByUserIds(userIds);
 		
 		return users;
@@ -293,22 +293,22 @@ public class UserServiceImplementation implements UserService {
 		
 	}
 
-	public List<User> getFollowingUsers(Integer userId) {
+	public List<User> getFollowingUsers(Long userId) {
 		User user = repo.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found"));
 		Set<UserDto> following = user.getFollowing();
-		List<Integer> followingIds = following.stream()
+		List<Long> followingIds = following.stream()
 				.map(UserDto::getId)
 				.collect(Collectors.toList());
 		if (followingIds.isEmpty()) return new ArrayList<>();
 		return repo.findAllUserByUserIds(followingIds);
 	}
 
-	public List<User> getFollowerUsers(Integer userId) {
+	public List<User> getFollowerUsers(Long userId) {
 		User user = repo.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found"));
 		Set<UserDto> follower = user.getFollower();
-		List<Integer> followerIds = follower.stream()
+		List<Long> followerIds = follower.stream()
 				.map(UserDto::getId)
 				.collect(Collectors.toList());
 		if (followerIds.isEmpty()) return new ArrayList<>();

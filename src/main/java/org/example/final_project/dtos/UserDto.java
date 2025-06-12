@@ -8,7 +8,7 @@ public class UserDto {
 	private String name;
 	private String userImage;
 	private String email;
-	private Integer id;
+	private Long id;
 	
 	public UserDto() {
 		// TODO Auto-generated constructor stub
@@ -18,7 +18,7 @@ public class UserDto {
 
 
 
-	public UserDto(String username, String name, String userImage, String email, Integer id) {
+	public UserDto(String username, String name, String userImage, String email, Long id) {
 		super();
 		this.username = username;
 		this.name = name;
@@ -69,11 +69,11 @@ public class UserDto {
 		this.email = email;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

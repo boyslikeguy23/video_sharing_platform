@@ -27,7 +27,7 @@ public class StoryServiceImplementation implements StoryService {
 	private UserRepository userRepo;
 
 	@Override
-	public Story createStory(Story story, Integer userId) throws UserException {
+	public Story createStory(Story story, Long userId) throws UserException {
 		
 		User user = userService.findUserById(userId);
 	
@@ -51,7 +51,7 @@ public class StoryServiceImplementation implements StoryService {
 	}
 
 	@Override
-	public List<Story> findStoryByUserId(Integer userId) throws UserException, StoryException {
+	public List<Story> findStoryByUserId(Long userId) throws UserException, StoryException {
 		
 		User user = userService.findUserById(userId);
 		

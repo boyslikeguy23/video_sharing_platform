@@ -37,7 +37,7 @@ public class JwtTokenProvider {
 		SecretKey key=Keys.hmacShaKeyFor(SecurityContest.JWT_KEY.getBytes());
 		
 		String jwt=Jwts.builder()
-				.setIssuer("Ashok Zarmariya")
+				.setIssuer("Mai Xuan Tung")
 				.claim("username",user.getEmail())
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(new Date().getTime()+ 990000000))

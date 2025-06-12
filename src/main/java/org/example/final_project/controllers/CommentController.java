@@ -27,14 +27,14 @@ public class CommentController {
 	private UserService userService;
 	
 	@PostMapping("/create/{postId}")
-	public ResponseEntity<Comments> createCommentHandler(@RequestBody Comments comment, @PathVariable("postId") Integer postId, @RequestHeader("Authorization")String token) throws PostException, UserException {
+	public ResponseEntity<Comments> createCommentHandler(@RequestBody Comments comment, @PathVariable("postId") Long postId, @RequestHeader("Authorization")String token) throws PostException, UserException {
 		User user = userService.findUserProfile(token);
 		Comments createdComment = commentService.createComment(comment, postId, user.getId());
 		System.out.println("created comment c--- "+createdComment.getContent());
 		return new ResponseEntity<Comments>(createdComment,HttpStatus.CREATED);
 	}
 	@PutMapping("/like/{commentId}")
-	public ResponseEntity<Comments> likeCommentHandler(@PathVariable Integer commentId, @RequestHeader("Authorization")String token) throws UserException, CommentException {
+	public ResponseEntity<Comments> likeCommentHandler(@PathVariable Long commentId, @RequestHeader("Authorization")String token) throws UserException, CommentException {
 		System.out.println("----------- like comment id ---------- ");
 		User user = userService.findUserProfile(token);
 		Comments likedComment=commentService.likeComment(commentId, user.getId());
@@ -44,7 +44,7 @@ public class CommentController {
 	
 	
 	@PutMapping("/unlike/{commentId}")
-	public ResponseEntity<Comments> unlikeCommentHandler(@RequestHeader("Authorization")String token, @PathVariable Integer commentId) throws UserException, CommentException{
+	public ResponseEntity<Comments> unlikeCommentHandler(@RequestHeader("Authorization")String token, @PathVariable Long commentId) throws UserException, CommentException{
 		User user = userService.findUserProfile(token);
 		Comments likedComment=commentService.unlikeComment(commentId, user.getId());
 		
@@ -63,7 +63,7 @@ public class CommentController {
 	
 
 	@DeleteMapping("/delete/{commentId}")
-	public ResponseEntity<MessageResponse> deleteCommentHandler(@PathVariable Integer commentId) throws CommentException{
+	public ResponseEntity<MessageResponse> deleteCommentHandler(@PathVariable Long commentId) throws CommentException{
 		
 		commentService.deleteCommentById(commentId);
 		
@@ -73,7 +73,7 @@ public class CommentController {
 	}
 	
 	@GetMapping("/post/{postId}")
-	public ResponseEntity<List<Comments>> getCommentHandler(@PathVariable Integer postId) throws CommentException, PostException{
+	public ResponseEntity<List<Comments>> getCommentHandler(@PathVariable Long postId) throws CommentException, PostException{
 		
 		List<Comments> comments=commentService.findCommentByPostId(postId);
 		

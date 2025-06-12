@@ -53,8 +53,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
-                // .setAllowedOrigins("*")
-                .setAllowedOrigins("http://localhost:3000", "http://localhost:5454")
                 .withSockJS();
     }
 
@@ -71,5 +69,3 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //        return true;
 //    }
 }
-
-

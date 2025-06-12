@@ -5,9 +5,9 @@ import org.example.final_project.models.Message;
 import java.time.LocalDateTime;
 
 public class ChatMessageResponse {
-    private Integer id;
-    private Integer senderId;
-    private Integer receiverId;
+    private Long id;
+    private Long senderId;
+    private Long receiverId;
     private String content;
     private LocalDateTime sentAt;
     private boolean read;
@@ -45,27 +45,27 @@ public class ChatMessageResponse {
         return response;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getSenderId() {
+    public Long getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(Integer senderId) {
+    public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
 
-    public Integer getReceiverId() {
+    public Long getReceiverId() {
         return receiverId;
     }
 
-    public void setReceiverId(Integer receiverId) {
+    public void setReceiverId(Long receiverId) {
         this.receiverId = receiverId;
     }
 
@@ -109,7 +109,7 @@ public class ChatMessageResponse {
         this.receiver = receiver;
     }
 
-    public ChatMessageResponse(Integer id, Integer senderId, Integer receiverId, String content, LocalDateTime sentAt, boolean read, UserDto sender, UserDto receiver) {
+    public ChatMessageResponse(Long id, Long senderId, Long receiverId, String content, LocalDateTime sentAt, boolean read, UserDto sender, UserDto receiver) {
         this.id = id;
         this.senderId = senderId;
         this.receiverId = receiverId;

@@ -12,7 +12,7 @@ public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 	private String username;
 	private String email;
 	private String name;
@@ -46,7 +46,7 @@ public class User {
 
 	
 
-	public User(Integer id, String username, String email, String name, String mobile, String website, String bio,
+	public User(Long id, String username, String email, String name, String mobile, String website, String bio,
 			String gender, String image, String password, Set<UserDto> follower, Set<UserDto> following,
 			List<Story> stories, List<Post> savedPost) {
 		super();
@@ -115,11 +115,11 @@ public class User {
 		this.gender = gender;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

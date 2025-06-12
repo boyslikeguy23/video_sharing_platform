@@ -23,9 +23,6 @@ public class AppConfig {
 	
 	@Bean
 	public SecurityFilterChain securityConfiguration(HttpSecurity http) throws Exception {
-		
-
-		
 		http
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 		.and()
@@ -61,7 +58,7 @@ public class AppConfig {
 				
 //				cfg.setAllowedOrigins(Collections.singletonList("*"));
 				cfg.setAllowedOrigins(Arrays.asList(
-						"https://instagram-clone-java-full-stack.vercel.app",
+					"https://instagram-clone-java-full-stack.vercel.app",
 						"http://localhost:3000",
 						"http://localhost:4000"));
 				//cfg.setAllowedMethods(Arrays.asList("GET", "POST","DELETE","PUT"));

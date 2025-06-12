@@ -35,7 +35,7 @@ public class CommentsServiceImplement implements CommentService {
 	
 	
 	@Override
-	public Comments createComment(Comments comment, Integer postId, Integer userId) throws PostException, UserException {
+	public Comments createComment(Comments comment, Long postId, Long userId) throws PostException, UserException {
 		
 		User user=userService.findUserById(userId);
 		
@@ -65,7 +65,7 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public Comments findCommentById(Integer commentId) throws CommentException {
+	public Comments findCommentById(Long commentId) throws CommentException {
 		Optional<Comments> opt=repo.findById(commentId);
 		
 		if(opt.isPresent()) {
@@ -75,7 +75,7 @@ public class CommentsServiceImplement implements CommentService {
 	}
 
 	@Override
-	public Comments likeComment(Integer commentId, Integer userId) throws UserException, CommentException {
+	public Comments likeComment(Long commentId, Long userId) throws UserException, CommentException {
 		// TODO Auto-generated method stub
 		
 		User user=userService.findUserById(userId);
@@ -97,7 +97,7 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public Comments unlikeComment(Integer commentId, Integer userId) throws UserException, CommentException {
+	public Comments unlikeComment(Long commentId, Long userId) throws UserException, CommentException {
 		User user=userService.findUserById(userId);
 		Comments comment=findCommentById(commentId);
 		
@@ -109,7 +109,7 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public String deleteCommentById(Integer commentId) throws CommentException {
+	public String deleteCommentById(Long commentId) throws CommentException {
 		Comments comment=findCommentById(commentId);
 		
 		System.out.println("find by id delete-------- "+comment.getContent());
@@ -121,7 +121,7 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public String editComment(Comments comment,Integer commentId) throws CommentException {
+	public String editComment(Comments comment,Long commentId) throws CommentException {
 		Comments isComment=findCommentById(commentId);
 		
 		if(comment.getContent()!=null) {
@@ -133,7 +133,7 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public List<Comments> findCommentByPostId(Integer postId) throws PostException {
+	public List<Comments> findCommentByPostId(Long postId) throws PostException {
 		List<Comments> comments =repo.findCommentsByPostId(postId);
 		return comments;
 	}

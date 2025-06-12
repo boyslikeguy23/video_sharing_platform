@@ -14,7 +14,7 @@ public class Comments {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 	
 	@Embedded
 	@NotNull
@@ -42,7 +42,7 @@ public class Comments {
 	}
 
 
-	public Comments(Integer id, @NotNull UserDto userDto, @NotNull String content, Set<UserDto> likedByUsers, Post post,
+	public Comments(Long id, @NotNull UserDto userDto, @NotNull String content, Set<UserDto> likedByUsers, Post post,
 			LocalDateTime createdAt) {
 		super();
 		this.id = id;
@@ -82,11 +82,11 @@ public class Comments {
 	}
 
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

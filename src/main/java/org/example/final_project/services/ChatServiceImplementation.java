@@ -27,7 +27,7 @@ public class ChatServiceImplementation implements ChatService{
 
 
     @Override
-    public Message sendMessage(Integer senderId, Integer receiverId, String content) throws UserException {
+    public Message sendMessage(Long senderId, Long receiverId, String content) throws UserException {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new UserException("Sender not found"));
 
@@ -46,16 +46,16 @@ public class ChatServiceImplementation implements ChatService{
 
 
     @Override
-    public List<Message> getConversation(Integer userId1, Integer userId2) {
+    public List<Message> getConversation(Long userId1, Long userId2) {
         return messageRepository.findConversation(userId1, userId2);
     }
 
 
 //    @Override
-//    public List<User> getRecentChats(Integer userId) {
+//    public List<User> getRecentChats(Long userId) {
 //        return messageRepository.findRecentChatUsers(userId);
 //    }
-    public List<User> getRecentChats(Integer userId) {
+    public List<User> getRecentChats(Long userId) {
         Set<User> users = new LinkedHashSet<>();
         users.addAll(messageRepository.findReceiversBySender(userId));
         users.addAll(messageRepository.findSendersByReceiver(userId));
@@ -64,7 +64,7 @@ public class ChatServiceImplementation implements ChatService{
 
 
     @Override
-    public void markMessageAsRead(Integer messageId) throws UserException {
+    public void markMessageAsRead(Long messageId) throws UserException {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new UserException("Message not found"));
 
@@ -73,7 +73,7 @@ public class ChatServiceImplementation implements ChatService{
     }
 
     @Override
-    public void deleteMessage(Integer messageId, Integer userId) throws UserException {
+    public void deleteMessage(Long messageId, Long userId) throws UserException {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new UserException("Message not found"));
 
@@ -86,7 +86,7 @@ public class ChatServiceImplementation implements ChatService{
     }
 
     @Override
-    public List<Message> getUnreadMessages(Integer userId) {
+    public List<Message> getUnreadMessages(Long userId) {
         return messageRepository.findUnreadMessages(userId);
     }
 
