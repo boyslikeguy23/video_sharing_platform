@@ -1,12 +1,14 @@
 package org.example.final_project.services;
 
 import jakarta.transaction.Transactional;
+import org.example.final_project.dtos.RecentChatDto;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
 import org.example.final_project.models.User;
 import org.example.final_project.repositories.MessageRepository;
 import org.example.final_project.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,9 @@ public class ChatServiceImplementation implements ChatService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
 
 
@@ -86,9 +91,59 @@ public class ChatServiceImplementation implements ChatService{
     }
 
     @Override
+    public Message deleteMessageRealtime(Long messageId, Long userId) throws UserException {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new UserException("Message not found"));
+
+        // Chỉ người gửi mới có thể xóa tin nhắn
+        if (!message.getSender().getId().equals(userId)) {
+            throw new UserException("You don't have permission to delete this message");
+        }
+
+        // Save a copy of the message before deleting it
+        Message deletedMessage = new Message();
+        deletedMessage.setId(message.getId());
+        deletedMessage.setSender(message.getSender());
+        deletedMessage.setReceiver(message.getReceiver());
+        deletedMessage.setContent(message.getContent());
+        deletedMessage.setSentAt(message.getSentAt());
+        deletedMessage.setRead(message.isRead());
+
+        // Delete the message
+        messageRepository.delete(message);
+
+        return deletedMessage;
+    }
+
+    @Override
     public List<Message> getUnreadMessages(Long userId) {
         return messageRepository.findUnreadMessages(userId);
     }
 
+    @Override
+    public List<RecentChatDto> getRecentChatsWithLastMessage(Long userId) {
+        List<User> recentUsers = getRecentChats(userId);
+        List<RecentChatDto> recentChatsWithLastMessage = new ArrayList<>();
 
+        for (User user : recentUsers) {
+            List<Message> messages = messageRepository.findMessagesBetweenUsersOrderedByDate(userId, user.getId());
+            Message lastMessage = messages.isEmpty() ? null : messages.get(0);
+            if (lastMessage != null) {
+                RecentChatDto dto = new RecentChatDto();
+                dto.setId(user.getId());
+                dto.setUsername(user.getUsername());
+                dto.setName(user.getName());
+                dto.setUserImage(user.getImage());
+                dto.setEmail(user.getEmail());
+                dto.setLastMessage(lastMessage.getContent());
+                dto.setSentAt(lastMessage.getSentAt());
+                recentChatsWithLastMessage.add(dto);
+            }
+        }
+
+        // Sort by sentAt in descending order (most recent first)
+        recentChatsWithLastMessage.sort((a, b) -> b.getSentAt().compareTo(a.getSentAt()));
+
+        return recentChatsWithLastMessage;
+    }
 }

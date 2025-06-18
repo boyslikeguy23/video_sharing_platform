@@ -1,7 +1,9 @@
 package org.example.final_project.controllers;
 
+import org.example.final_project.dtos.ChatMessageDeletedEvent;
 import org.example.final_project.dtos.ChatMessageRequest;
 import org.example.final_project.dtos.ChatMessageResponse;
+import org.example.final_project.dtos.RecentChatDto;
 import org.example.final_project.dtos.UserDto;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -28,6 +31,9 @@ public class ChatController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/send")
     public ResponseEntity<ChatMessageResponse> sendMessage(
@@ -60,24 +66,13 @@ public class ChatController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<UserDto>> getRecentChats(
+    public ResponseEntity<List<RecentChatDto>> getRecentChats(
             @RequestHeader("Authorization") String token) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
-        List<User> recentUsers = chatService.getRecentChats(currentUser.getId());
+        List<RecentChatDto> recentChatsWithLastMessage = chatService.getRecentChatsWithLastMessage(currentUser.getId());
 
-        List<UserDto> response = recentUsers.stream()
-                .map(user -> {
-                    UserDto dto = new UserDto();
-                    dto.setId(user.getId());
-                    dto.setUsername(user.getUsername());
-                    dto.setName(user.getName());
-                    dto.setUserImage(user.getImage());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(recentChatsWithLastMessage);
     }
 
     @PutMapping("/messages/{messageId}/read")
@@ -96,7 +91,31 @@ public class ChatController {
             @PathVariable Long messageId) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
-        chatService.deleteMessage(messageId, currentUser.getId());
+
+        // Use the real-time deletion method instead of the regular one
+        Message deletedMessage = chatService.deleteMessageRealtime(messageId, currentUser.getId());
+
+        // Create deletion event
+        ChatMessageDeletedEvent deletionEvent = new ChatMessageDeletedEvent(
+                deletedMessage.getId(),
+                deletedMessage.getSender().getId(),
+                deletedMessage.getReceiver().getId()
+        );
+
+        // Send deletion event to the receiver
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(deletedMessage.getReceiver().getId()),
+                "/queue/messages",
+                deletionEvent
+        );
+
+        // Also send deletion event to the sender (to update all their clients)
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(deletedMessage.getSender().getId()),
+                "/queue/messages",
+                deletionEvent
+        );
+
         return ResponseEntity.ok().build();
     }
 
