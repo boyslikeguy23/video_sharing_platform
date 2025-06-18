@@ -98,13 +98,21 @@ public class CommentsServiceImplement implements CommentService {
 
 	@Override
 	public Comments unlikeComment(Long commentId, Long userId) throws UserException, CommentException {
-		User user=userService.findUserById(userId);
-		Comments comment=findCommentById(commentId);
-		
-		comment.getLikedByUsers().remove(user);
-		
+		User user = userService.findUserById(userId);
+		Comments comment = findCommentById(commentId);
+
+		// Tạo UserDto giống như khi like
+		UserDto userDto = new UserDto();
+		userDto.setEmail(user.getEmail());
+		userDto.setId(user.getId());
+		userDto.setUsername(user.getUsername());
+		userDto.setName(user.getName());
+		userDto.setUserImage(user.getImage());
+
+		// Remove userDto khỏi likedByUsers
+		comment.getLikedByUsers().removeIf(u -> u.getId().equals(userDto.getId()));
+
 		return repo.save(comment);
-		
 	}
 
 

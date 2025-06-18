@@ -45,9 +45,10 @@ public class CommentController {
 	
 	@PutMapping("/unlike/{commentId}")
 	public ResponseEntity<Comments> unlikeCommentHandler(@RequestHeader("Authorization")String token, @PathVariable Long commentId) throws UserException, CommentException{
+		System.out.println("----------- unlike comment id ---------- ");
 		User user = userService.findUserProfile(token);
 		Comments likedComment=commentService.unlikeComment(commentId, user.getId());
-		
+		System.out.println("unliked comment - : "+likedComment);
 		return new ResponseEntity<Comments>(likedComment,HttpStatus.OK);
 	}
 	
