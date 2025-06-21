@@ -1,6 +1,6 @@
 package org.example.final_project.configs;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,14 +12,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 public class AppConfig {
+	
+	@Autowired
+	private CorsConfigurationSource corsConfigurationSource;
 	
 	@Bean
 	public SecurityFilterChain securityConfiguration(HttpSecurity http) throws Exception {
@@ -47,34 +46,7 @@ public class AppConfig {
         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         .and()
 		.csrf().disable()
-		.cors().configurationSource( new CorsConfigurationSource() {
-			
-			@Override
-			public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-				
-				
-				
-				CorsConfiguration cfg = new CorsConfiguration();
-				
-//				cfg.setAllowedOrigins(Collections.singletonList("*"));
-				cfg.setAllowedOrigins(Arrays.asList(
-					"https://instagram-clone-java-full-stack.vercel.app",
-					"http://localhost:3000",
-					"http://localhost:4000",
-					"https://your-frontend-domain.vercel.app" // Thay thế bằng domain thực tế của bạn
-				));
-				//cfg.setAllowedMethods(Arrays.asList("GET", "POST","DELETE","PUT"));
-				cfg.setAllowedMethods(Collections.singletonList("*"));
-				cfg.setAllowCredentials(true);
-				cfg.setAllowedHeaders(Collections.singletonList("*"));
-				cfg.setExposedHeaders(Arrays.asList("Authorization"));
-				cfg.setMaxAge(3600L);
-				return cfg;
-				
-				
-				
-			}
-		})
+		.cors().configurationSource(corsConfigurationSource)
 		.and()
 		.formLogin()
 		.and()
