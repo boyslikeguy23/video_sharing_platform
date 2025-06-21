@@ -26,6 +26,7 @@ public class AppConfig {
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 		.and()
 		.authorizeHttpRequests()
+		.requestMatchers("/actuator/**").permitAll()
 		.requestMatchers(HttpMethod.POST,"/signup").permitAll()
 		.requestMatchers(HttpMethod.GET,"/api").permitAll()
 		.requestMatchers(
