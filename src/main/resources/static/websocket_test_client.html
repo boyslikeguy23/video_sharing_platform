@@ -107,12 +107,24 @@
             background-color: #007bff;
             color: white;
         }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>WebSocket Chat Test Client</h1>
-        
+
         <div class="auth-container">
             <h2>Authentication</h2>
             <div>
@@ -126,18 +138,18 @@
             </div>
             <div id="connection-status" class="status disconnected">Disconnected</div>
         </div>
-        
+
         <div class="chat-container">
             <div class="user-list" id="user-list">
                 <h3>Recent Chats</h3>
                 <!-- User list will be populated here -->
             </div>
-            
+
             <div class="chat-box">
                 <div class="messages" id="messages">
                     <!-- Messages will be displayed here -->
                 </div>
-                
+
                 <div class="input-area">
                     <input type="text" id="message-input" placeholder="Type a message...">
                     <button id="send-btn">Send</button>
@@ -149,7 +161,7 @@
     <!-- Include SockJS and STOMP client libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    
+
     <script>
         // DOM Elements
         const emailInput = document.getElementById('email');
@@ -162,12 +174,12 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
-        
+
         // Variables
         let stompClient = null;
         let currentUser = null;
         let selectedUser = null;
-        
+
         // Event Listeners
         loginBtn.addEventListener('click', login);
         connectBtn.addEventListener('click', connectWebSocket);
@@ -177,60 +189,60 @@
                 sendMessage();
             }
         });
-        
+
         // Functions
         async function login() {
             const email = emailInput.value;
             const password = passwordInput.value;
-            
+
             if (!email || !password) {
                 alert('Please enter email and password');
                 return;
             }
-            
+
             try {
                 // Create Basic Auth header
                 const credentials = btoa(`${email}:${password}`);
-                
+
                 const response = await fetch('http://localhost:5454/signin', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Basic ${credentials}`
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Login failed');
                 }
-                
+
                 // Get the JWT token from the response headers
                 const token = response.headers.get('Authorization');
                 if (!token) {
                     throw new Error('No token received');
                 }
-                
+
                 // Set the token in the input field
                 if (!token.startsWith('Bearer ')) {
                     tokenInput.value = 'Bearer ' + token;
                 } else {
                     tokenInput.value = token;
                 }
-                
+
                 // Get user data
                 const userData = await response.json();
                 currentUser = userData;
-                
+
                 alert('Login successful! Token received.');
-                
+
                 // Load recent chats
                 loadRecentChats(token);
-                
+
             } catch (error) {
                 console.error('Login error:', error);
                 alert('Login failed: ' + error.message);
             }
         }
-        
+
         async function loadRecentChats(token) {
             try {
                 const authHeader = token.startsWith('Bearer ') ? token : 'Bearer ' + token;
@@ -240,48 +252,48 @@
                         'Authorization': authHeader
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to load recent chats');
                 }
-                
+
                 const users = await response.json();
-                
+
                 // Clear user list
                 userList.innerHTML = '<h3>Recent Chats</h3>';
-                
+
                 // Add users to the list
                 users.forEach(user => {
                     const userItem = document.createElement('div');
                     userItem.className = 'user-item';
                     userItem.textContent = user.name || user.username;
                     userItem.dataset.userId = user.id;
-                    
+
                     userItem.addEventListener('click', () => {
                         // Remove active class from all user items
                         document.querySelectorAll('.user-item').forEach(item => {
                             item.classList.remove('active');
                         });
-                        
+
                         // Add active class to clicked user item
                         userItem.classList.add('active');
-                        
+
                         // Set selected user
                         selectedUser = user;
-                        
+
                         // Load conversation
                         loadConversation(token, user.id);
                     });
-                    
+
                     userList.appendChild(userItem);
                 });
-                
+
             } catch (error) {
                 console.error('Error loading recent chats:', error);
                 alert('Failed to load recent chats: ' + error.message);
             }
         }
-        
+
         async function loadConversation(token, userId) {
             try {
                 const authHeader = token.startsWith('Bearer ') ? token : 'Bearer ' + token;
@@ -291,47 +303,47 @@
                         'Authorization': authHeader
                     }
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to load conversation');
                 }
-                
+
                 const messages = await response.json();
-                
+
                 // Clear messages container
                 messagesContainer.innerHTML = '';
-                
+
                 // Add messages to the container
                 messages.forEach(message => {
                     addMessageToUI(message);
                 });
-                
+
                 // Scroll to bottom
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
+
             } catch (error) {
                 console.error('Error loading conversation:', error);
                 alert('Failed to load conversation: ' + error.message);
             }
         }
-        
+
         function connectWebSocket() {
             const token = tokenInput.value;
-            
+
             if (!token) {
                 alert('Please enter a JWT token');
                 return;
             }
-            
+
             // Disconnect if already connected
             if (stompClient) {
                 stompClient.disconnect();
             }
-            
+
             // Create SockJS and STOMP client
             const socket = new SockJS('http://localhost:5454/ws');
             stompClient = Stomp.over(socket);
-            
+
             const jwt = token.replace(/^Bearer\s/, '');
 
             // Connect to WebSocket
@@ -341,16 +353,21 @@
                     console.log('Connected to WebSocket:', frame);
                     connectionStatus.textContent = 'Connected';
                     connectionStatus.className = 'status connected';
-                    
+
                     // Subscribe to user-specific messages
                     stompClient.subscribe('/user/queue/messages', message => {
                         const messageData = JSON.parse(message.body);
                         console.log('Received message:', messageData);
-                        
+
+                        // Check if this is a message deletion event
+                        if (messageData.eventType === 'MESSAGE_DELETED') {
+                            // Handle message deletion
+                            handleMessageDeletion(messageData);
+                        } 
                         // Add message to UI if it's from the selected user
-                        if (selectedUser && messageData.senderId === selectedUser.id) {
+                        else if (selectedUser && messageData.senderId === selectedUser.id) {
                             addMessageToUI(messageData);
-                            
+
                             // Scroll to bottom
                             messagesContainer.scrollTop = messagesContainer.scrollHeight;
                         }
@@ -363,27 +380,27 @@
                 }
             );
         }
-        
+
         function sendMessage() {
             if (!stompClient || !selectedUser) {
                 alert('Please connect to WebSocket and select a user');
                 return;
             }
-            
+
             const content = messageInput.value.trim();
-            
+
             if (!content) {
                 return;
             }
-            
+
             const chatMessage = {
                 receiverId: selectedUser.id,
                 content: content
             };
-            
+
             // Send message via WebSocket
             stompClient.send('/app/chat.send', {}, JSON.stringify(chatMessage));
-            
+
             // Create a temporary message object for UI
             const tempMessage = {
                 id: Date.now(), // Temporary ID
@@ -405,41 +422,129 @@
                     userImage: selectedUser.userImage
                 }
             };
-            
+
             // Add message to UI
             addMessageToUI(tempMessage);
-            
+
             // Clear input
             messageInput.value = '';
-            
+
             // Scroll to bottom
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-        
+
         function addMessageToUI(message) {
             const messageElement = document.createElement('div');
             messageElement.className = 'message';
-            
+            messageElement.id = `message-${message.id}`; // Add ID for easy deletion
+
             // Check if message is sent by current user
             if (message.senderId === currentUser.id) {
                 messageElement.classList.add('sent');
             } else {
                 messageElement.classList.add('received');
             }
-            
+
             // Format date
             const date = new Date(message.sentAt);
             const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-            
+
             // Set message content
-            messageElement.innerHTML = `
+            let messageContent = `
                 <div><strong>${message.sender.name || message.sender.username}</strong></div>
                 <div>${message.content}</div>
                 <div style="font-size: 0.8em; color: #888;">${formattedDate}</div>
             `;
-            
+
+            // Add delete button for messages sent by current user
+            if (message.senderId === currentUser.id) {
+                messageContent += `
+                <div style="text-align: right; margin-top: 5px;">
+                    <button class="delete-btn" onclick="deleteMessage(${message.id})">Delete</button>
+                </div>
+                `;
+            }
+
+            messageElement.innerHTML = messageContent;
+
             // Add message to container
             messagesContainer.appendChild(messageElement);
+        }
+
+        /**
+         * Handle message deletion event
+         * @param {Object} deletionEvent - The deletion event data
+         */
+        function handleMessageDeletion(deletionEvent) {
+            console.log('Handling message deletion:', deletionEvent);
+
+            // Find the message element by ID
+            const messageElement = document.getElementById(`message-${deletionEvent.messageId}`);
+
+            if (messageElement) {
+                // Remove the message from the UI
+                messageElement.remove();
+                console.log(`Message ${deletionEvent.messageId} removed from UI`);
+            } else {
+                console.log(`Message ${deletionEvent.messageId} not found in UI`);
+            }
+        }
+
+        /**
+         * Delete a message
+         * @param {number} messageId - The ID of the message to delete
+         */
+        function deleteMessage(messageId) {
+            if (!stompClient) {
+                alert('WebSocket connection is not established');
+                return;
+            }
+
+            console.log(`Deleting message ${messageId}`);
+
+            // Try to delete via WebSocket first (preferred method)
+            if (stompClient.connected) {
+                // Send deletion request via WebSocket
+                stompClient.send('/app/chat.delete', {}, messageId);
+                console.log(`Sent WebSocket delete request for message ${messageId}`);
+            } else {
+                // Fallback to REST API
+                deleteMessageViaREST(messageId);
+            }
+        }
+
+        /**
+         * Delete a message via REST API (fallback method)
+         * @param {number} messageId - The ID of the message to delete
+         */
+        async function deleteMessageViaREST(messageId) {
+            try {
+                const token = tokenInput.value;
+                const authHeader = token.startsWith('Bearer ') ? token : 'Bearer ' + token;
+
+                const response = await fetch(`http://localhost:5454/api/messages/messages/${messageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': authHeader
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete message');
+                }
+
+                console.log(`Message ${messageId} deleted via REST API`);
+
+                // Remove from UI immediately (don't wait for WebSocket event)
+                const messageElement = document.getElementById(`message-${messageId}`);
+                if (messageElement) {
+                    messageElement.remove();
+                }
+
+            } catch (error) {
+                console.error('Error deleting message:', error);
+                alert('Failed to delete message: ' + error.message);
+            }
         }
     </script>
 </body>
