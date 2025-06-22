@@ -8,35 +8,34 @@ services:
     envVars:
       - key: DB_HOST
         fromService:
-          type: pserv
+          type: postgres
           name: video-sharing-db
           property: host
       - key: DB_PORT
         fromService:
-          type: pserv
+          type: postgres
           name: video-sharing-db
           property: port
       - key: DB_NAME
         fromService:
-          type: pserv
+          type: postgres
           name: video-sharing-db
           property: database
       - key: DB_USERNAME
         fromService:
-          type: pserv
+          type: postgres
           name: video-sharing-db
           property: user
       - key: DB_PASSWORD
         fromService:
-          type: pserv
+          type: postgres
           name: video-sharing-db
           property: password
     healthCheckPath: /actuator/health
     autoDeploy: true
 
   # PostgreSQL database
-  - type: pserv
+  - type: postgres
     name: video-sharing-db
-    engine: postgres
-    version: 15
-    ipAllowList: []
+    plan: free
+    region: singapore
