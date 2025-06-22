@@ -1,0 +1,42 @@
+services:
+  # Spring Boot web service
+  - type: web
+    name: video-sharing-api
+    runtime: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/final_project-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: video-sharing-db
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: video-sharing-db
+          property: port
+      - key: DB_NAME
+        fromService:
+          type: pserv
+          name: video-sharing-db
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: pserv
+          name: video-sharing-db
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: video-sharing-db
+          property: password
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+
+  # PostgreSQL database
+  - type: pserv
+    name: video-sharing-db
+    engine: postgres
+    version: 15
+    ipAllowList: []
