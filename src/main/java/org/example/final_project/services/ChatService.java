@@ -16,7 +16,7 @@ public interface ChatService {
 
     List<RecentChatDto> getRecentChatsWithLastMessage(Long userId);
 
-    void markMessageAsRead(Long messageId) throws UserException;
+    void markMessageAsRead(Long messageId, Long userId) throws UserException;
 
     void deleteMessage(Long messageId, Long userId) throws UserException;
 

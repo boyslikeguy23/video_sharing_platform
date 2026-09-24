@@ -1,12 +1,8 @@
 package org.example.final_project.models;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
 @Entity
 @Table(name = "messages")
 public class Message {
@@ -33,5 +29,23 @@ public class Message {
 
     // Constructors
     public Message() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getSender() { return sender; }
+    public void setSender(User sender) { this.sender = sender; }
+
+    public User getReceiver() { return receiver; }
+    public void setReceiver(User receiver) { this.receiver = receiver; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+
+    public LocalDateTime getSentAt() { return sentAt; }
+    public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+
+    public boolean isRead() { return read; }
+    public void setRead(boolean read) { this.read = read; }
 
 }

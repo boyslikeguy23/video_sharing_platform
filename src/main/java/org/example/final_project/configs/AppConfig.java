@@ -1,5 +1,7 @@
 package org.example.final_project.configs;
 
+import org.example.final_project.security.JwtTokenProvider;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,7 +23,7 @@ import java.util.Collections;
 public class AppConfig {
 	
 	@Bean
-	public SecurityFilterChain securityConfiguration(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityConfiguration(HttpSecurity http, JwtTokenProvider tokens) throws Exception {
 		http
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 		.and()
@@ -41,8 +43,8 @@ public class AppConfig {
 		).permitAll()
 		.anyRequest().authenticated()
 		.and()
-		.addFilterAfter(new JwtGenratorFilter(), BasicAuthenticationFilter.class)
-		.addFilterBefore(new JwtValidationFilter(), BasicAuthenticationFilter.class)
+		.addFilterAfter(new JwtGenratorFilter(tokens), BasicAuthenticationFilter.class)
+		.addFilterBefore(new JwtValidationFilter(tokens), BasicAuthenticationFilter.class)
 		.exceptionHandling()
         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
         .and()

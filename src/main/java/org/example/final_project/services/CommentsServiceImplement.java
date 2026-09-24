@@ -12,6 +12,7 @@ import org.example.final_project.repositories.CommentRepository;
 import org.example.final_project.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,11 +51,14 @@ public class CommentsServiceImplement implements CommentService {
 		userDto.setName(user.getName());
 		userDto.setUserImage(user.getImage());
 		
-		comment.setUserDto(userDto);
-		comment.setCreatedAt(LocalDateTime.now());
-		comment.setPost(post);
+		// Only copy client-editable fields; a supplied ID must never update an existing comment.
+		Comments created = new Comments();
+		created.setContent(comment.getContent());
+		created.setUserDto(userDto);
+		created.setCreatedAt(LocalDateTime.now());
+		created.setPost(post);
 		
-		Comments newComment= repo.save(comment);
+		Comments newComment= repo.save(created);
 		
 		post.getComments().add(newComment);
 		
@@ -117,10 +121,9 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public String deleteCommentById(Long commentId) throws CommentException {
+	public String deleteCommentById(Long commentId, Long userId) throws CommentException {
 		Comments comment=findCommentById(commentId);
-		
-		System.out.println("find by id delete-------- "+comment.getContent());
+		requireOwner(comment, userId);
 		
 		repo.deleteById(comment.getId());
 		
@@ -129,14 +132,21 @@ public class CommentsServiceImplement implements CommentService {
 
 
 	@Override
-	public String editComment(Comments comment,Long commentId) throws CommentException {
+	public String editComment(Comments comment, Long commentId, Long userId) throws CommentException {
 		Comments isComment=findCommentById(commentId);
+		requireOwner(isComment, userId);
 		
 		if(comment.getContent()!=null) {
 			isComment.setContent(comment.getContent());
 		}
 		repo.save(isComment);
 		return "Comment Updated Successfully";
+	}
+
+	private void requireOwner(Comments comment, Long userId) {
+		if (userId == null || comment.getUserDto() == null || !userId.equals(comment.getUserDto().getId())) {
+			throw new AccessDeniedException("Only the comment author can edit or delete this comment");
+		}
 	}
 
 

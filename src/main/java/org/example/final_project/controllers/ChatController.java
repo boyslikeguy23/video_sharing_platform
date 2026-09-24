@@ -80,8 +80,8 @@ public class ChatController {
             @RequestHeader("Authorization") String token,
             @PathVariable Long messageId) throws UserException {
 
-        userService.findUserProfile(token); // Validate user
-        chatService.markMessageAsRead(messageId);
+        User currentUser = userService.findUserProfile(token);
+        chatService.markMessageAsRead(messageId, currentUser.getId());
         return ResponseEntity.ok().build();
     }
 
@@ -169,7 +169,7 @@ public class ChatController {
         for (Message message : conversation) {
             if (!message.isRead() && message.getSender().getId().equals(userId) && 
                 message.getReceiver().getId().equals(currentUser.getId())) {
-                chatService.markMessageAsRead(message.getId());
+                chatService.markMessageAsRead(message.getId(), currentUser.getId());
             }
         }
 

@@ -3,6 +3,7 @@ package org.example.final_project.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +13,12 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobleException {
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<ErrorDetails> accessDeniedHandler(AccessDeniedException ex, WebRequest req) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(new ErrorDetails("You do not have permission to perform this action", req.getDescription(false), LocalDateTime.now()));
+	}
 
 	@ExceptionHandler(UserException.class)
 	public ResponseEntity<ErrorDetails> UserExceptionHandler(UserException ue, WebRequest req){

@@ -17,9 +17,9 @@ public interface CommentService {
 	public Comments likeComment(Long CommentId,Long userId) throws UserException, CommentException;
 	public Comments unlikeComment(Long CommentId,Long userId) throws UserException, CommentException;
 	
-	public String deleteCommentById(Long commentId) throws CommentException;
+	public String deleteCommentById(Long commentId, Long userId) throws CommentException;
 	
-	public String editComment(Comments comment, Long commentId) throws CommentException;
+	public String editComment(Comments comment, Long commentId, Long userId) throws CommentException;
 	
 	public List<Comments> findCommentByPostId(Long postId)throws PostException;
 }

@@ -10,6 +10,7 @@ import org.example.final_project.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -69,10 +70,13 @@ public class ChatServiceImplementation implements ChatService{
 
 
     @Override
-    public void markMessageAsRead(Long messageId) throws UserException {
+    public void markMessageAsRead(Long messageId, Long userId) throws UserException {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new UserException("Message not found"));
 
+        if (userId == null || !userId.equals(message.getReceiver().getId())) {
+            throw new AccessDeniedException("Only the recipient can mark this message as read");
+        }
         message.setRead(true);
         messageRepository.save(message);
     }

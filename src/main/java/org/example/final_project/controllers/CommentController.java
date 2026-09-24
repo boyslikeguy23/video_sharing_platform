@@ -53,9 +53,10 @@ public class CommentController {
 	}
 	
 	@PutMapping("/edit")
-	public ResponseEntity<MessageResponse> editCommentHandler(@RequestBody Comments comment) throws CommentException{
+	public ResponseEntity<MessageResponse> editCommentHandler(@RequestBody Comments comment, @RequestHeader("Authorization") String token) throws CommentException, UserException {
 		
-		commentService.editComment(comment, comment.getId());
+		User currentUser = userService.findUserProfile(token);
+		commentService.editComment(comment, comment.getId(), currentUser.getId());
 		
 		MessageResponse res=new MessageResponse("Comment Updated Successfully");
 		
@@ -64,9 +65,10 @@ public class CommentController {
 	
 
 	@DeleteMapping("/delete/{commentId}")
-	public ResponseEntity<MessageResponse> deleteCommentHandler(@PathVariable Long commentId) throws CommentException{
+	public ResponseEntity<MessageResponse> deleteCommentHandler(@PathVariable Long commentId, @RequestHeader("Authorization") String token) throws CommentException, UserException {
 		
-		commentService.deleteCommentById(commentId);
+		User currentUser = userService.findUserProfile(token);
+		commentService.deleteCommentById(commentId, currentUser.getId());
 		
 		MessageResponse res=new MessageResponse("Comment Delete Successfully");
 		

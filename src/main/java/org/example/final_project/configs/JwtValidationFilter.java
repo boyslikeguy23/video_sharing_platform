@@ -1,81 +1,49 @@
 package org.example.final_project.configs;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.example.final_project.security.JwtTokenProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.List;
 
 public class JwtValidationFilter extends OncePerRequestFilter {
+    private final JwtTokenProvider tokens;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
-	
-		
-		String jwt= request.getHeader(SecurityContest.HEADER);
+    public JwtValidationFilter(JwtTokenProvider tokens) {
+        this.tokens = tokens;
+    }
 
-		
-		if(jwt != null) {
-						
-			try {
-
-				//extracting the word Bearer
-				jwt = jwt.substring(7);
-
-				
-				SecretKey key= Keys.hmacShaKeyFor(SecurityContest.JWT_KEY.getBytes());
-				
-				Claims claims= Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
-				
-				String username= String.valueOf(claims.get("username"));
-				
-				String authorities= (String)claims.get("authorities");		
-				
-				List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
-				
-				Authentication auth = new UsernamePasswordAuthenticationToken(username, null, auths);
-
-				
-//				List<GrantedAuthority> authorities=(List<GrantedAuthority>)claims.get("authorities");
-//				Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities); 
-				
-				
-				SecurityContextHolder.getContext().setAuthentication(auth);
-				
-			} catch (Exception e) {
-				throw new BadCredentialsException("Invalid Token received... error");
-			}
-			
-			
-			
-		}
-		
-		filterChain.doFilter(request, response);
-		
-		
-	}
-	
-	
-	
-	
-	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-	
-		return request.getServletPath().equals("/signin");
-	}
-
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        String header = request.getHeader(SecurityContest.HEADER);
+        // Basic authentication is used by the existing /signin endpoint.
+        if (header != null && !header.regionMatches(true, 0, "Basic ", 0, 6)) {
+            try {
+                if (!header.regionMatches(true, 0, "Bearer ", 0, 7) || header.substring(7).isBlank()) {
+                    throw new IllegalArgumentException("Expected a bearer token");
+                }
+                Claims claims = tokens.parseToken(header.substring(7));
+                String authorities = claims.get("authorities", String.class);
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        claims.get("username", String.class), null,
+                        AuthorityUtils.commaSeparatedStringToAuthorityList(authorities == null ? "" : authorities));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (RuntimeException ex) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid or expired access token\"}");
+                return;
+            }
+        }
+        chain.doFilter(request, response);
+    }
 }
