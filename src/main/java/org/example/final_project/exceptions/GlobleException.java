@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
 
@@ -67,6 +68,12 @@ public class GlobleException {
 	public ResponseEntity<ErrorDetails> badCredentialsExceptionHandler(BadCredentialsException ex, WebRequest req){
 		ErrorDetails err = new ErrorDetails("Sai email hoặc mật khẩu", req.getDescription(false), LocalDateTime.now());
 		return new ResponseEntity<ErrorDetails>(err, HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorDetails> dataIntegrityHandler(DataIntegrityViolationException ex, WebRequest req) {
+		ErrorDetails err = new ErrorDetails("Dữ liệu đã tồn tại hoặc không hợp lệ", req.getDescription(false), LocalDateTime.now());
+		return new ResponseEntity<>(err, HttpStatus.CONFLICT);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

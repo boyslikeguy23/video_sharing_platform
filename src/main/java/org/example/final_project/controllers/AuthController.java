@@ -2,6 +2,8 @@ package org.example.final_project.controllers;
 
 
 import org.example.final_project.exceptions.UserException;
+import org.example.final_project.dtos.AccountUserResponse;
+import org.example.final_project.dtos.RegistrationRequest;
 import org.example.final_project.models.User;
 import org.example.final_project.repositories.UserRepository;
 import org.example.final_project.services.UserService;
@@ -13,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -37,10 +40,10 @@ public class AuthController {
 		    }
 	}
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUserHandler(@RequestBody User user) {
+	public ResponseEntity<?> registerUserHandler(@Valid @RequestBody RegistrationRequest request) {
 		try {
-			User createdUser = userService.registerUser(user);
-			return new ResponseEntity<User>(createdUser, HttpStatus.CREATED);
+			User createdUser = userService.registerUser(request);
+			return new ResponseEntity<AccountUserResponse>(AccountUserResponse.from(createdUser), HttpStatus.CREATED);
 		} catch (UserException e) {
 			return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
 		}

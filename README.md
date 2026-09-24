@@ -42,6 +42,12 @@ Optional environment variables: `DB_HOST` (default `localhost`), `DB_PORT` (defa
 - Invalid or expired Bearer tokens receive HTTP 401. Sign in through the existing `GET /signin` Basic authentication endpoint; its `Authorization` response header contains the token.
 - WebSocket STOMP `CONNECT` requires `Authorization: Bearer <token>`. Clients may send to `/app/chat.send` and `/app/chat.delete`, and subscribe to `/user/queue/messages` and `/user/queue/errors`. Direct broker destinations and other users' subscriptions are denied. Expired sessions cannot send or subscribe again; reconnect with a fresh token. Tokens are never written to authentication logs.
 
+## Account and content input
+
+- `POST /signup` validates email, username, display name, and password. Email and username are unique database fields.
+- Public user endpoints return only public profile fields and follower/following counts. Email, mobile number, saved posts, and password are never returned there. `GET /api/users/req` and signup responses include the account owner's email and mobile number.
+- Create post and story endpoints accept only their editable content fields. Any client-supplied ID, author, timestamp, likes, comments, or story owner is ignored; the server supplies these values from the authenticated account.
+
 ## Tests
 
 Run the security regression tests without PostgreSQL:

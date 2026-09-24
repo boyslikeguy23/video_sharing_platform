@@ -1,6 +1,8 @@
 package org.example.final_project.services;
 
 
+import org.example.final_project.dtos.RegistrationRequest;
+import org.example.final_project.dtos.UpdateUserRequest;
 import org.example.final_project.dtos.UserDto;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Comments;
@@ -17,11 +19,13 @@ import org.example.final_project.utils.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,35 +53,31 @@ public class UserServiceImplementation implements UserService {
 	private StoryRepository storyRepository;
 
 	@Override
-	public User registerUser(User user) throws UserException {
+	@Transactional
+	public User registerUser(RegistrationRequest request) throws UserException {
+		String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+		String username = request.getUsername().trim();
 
-		System.out.println("registered user ------ ");
-
-		Optional<User> isEmailExist = repo.findByEmail(user.getEmail());
+		Optional<User> isEmailExist = repo.findByEmail(email);
 
 		if (isEmailExist.isPresent()) {
 			throw new UserException("Email đã được sử dụng");
 		}
 
-		Optional<User> isUsernameTaken=repo.findByUsername(user.getUsername());
+		Optional<User> isUsernameTaken=repo.findByUsername(username);
 
 		if(isUsernameTaken.isPresent()) {
 			throw new UserException("Username đã được sử dụng");
 		}
 
-		if(user.getEmail()== null || user.getPassword()== null || user.getUsername()==null || user.getName()==null) {
-			throw new UserException("Vui lòng cung cấp đầy đủ thông tin đăng ký");
-
-		}
-
-		String encodedPassword=passwordEncoder.encode(user.getPassword());
+		String encodedPassword=passwordEncoder.encode(request.getPassword());
 
 		User newUser=new User();
 
-		newUser.setEmail(user.getEmail());
+		newUser.setEmail(email);
 		newUser.setPassword(encodedPassword);
-		newUser.setUsername(user.getUsername());
-		newUser.setName(user.getName());
+		newUser.setUsername(username);
+		newUser.setName(request.getName().trim());
 
 		return repo.save(newUser);
 
@@ -135,9 +135,6 @@ public class UserServiceImplementation implements UserService {
 
 
 		User unfollowUser=findUserById(unfollowUserId);
-
-		System.out.println("Bỏ theo dõi người dùng ---- "+unfollowUser.toString());
-		System.out.println("Bỏ theo dõi người theo dõi "+unfollowUser.getFollower().toString());
 
 		User reqUser=findUserById(reqUserId);
 
@@ -268,7 +265,8 @@ public class UserServiceImplementation implements UserService {
 
 
 	@Override
-	public User updateUserDetails(User updatedUser, User existingUser) throws UserException {
+	@Transactional
+	public User updateUserDetails(UpdateUserRequest updatedUser, User existingUser) throws UserException {
 
 		boolean usernameChanged = false;
 		boolean nameChanged = false;
@@ -276,8 +274,12 @@ public class UserServiceImplementation implements UserService {
 		boolean emailChanged = false;
 
 		if(updatedUser.getEmail()!= null) {
-			emailChanged = !updatedUser.getEmail().equals(existingUser.getEmail());
-			existingUser.setEmail(updatedUser.getEmail());	
+			String email = updatedUser.getEmail().trim().toLowerCase(Locale.ROOT);
+			emailChanged = !email.equals(existingUser.getEmail());
+			if (emailChanged && repo.findByEmail(email).isPresent()) {
+				throw new UserException("Email đã được sử dụng");
+			}
+			existingUser.setEmail(email);
 		}
 		if(updatedUser.getBio()!=null) {
 			existingUser.setBio(updatedUser.getBio());
@@ -287,8 +289,12 @@ public class UserServiceImplementation implements UserService {
 			existingUser.setName(updatedUser.getName());
 		}
 		if(updatedUser.getUsername()!=null) {
-			usernameChanged = !updatedUser.getUsername().equals(existingUser.getUsername());
-			existingUser.setUsername(updatedUser.getUsername());
+			String username = updatedUser.getUsername().trim();
+			usernameChanged = !username.equals(existingUser.getUsername());
+			if (usernameChanged && repo.findByUsername(username).isPresent()) {
+				throw new UserException("Username đã được sử dụng");
+			}
+			existingUser.setUsername(username);
 		}
 		if(updatedUser.getMobile()!=null) {
 			existingUser.setMobile(updatedUser.getMobile());
@@ -304,13 +310,6 @@ public class UserServiceImplementation implements UserService {
 			existingUser.setImage(updatedUser.getImage());
 		}
 
-
-		if(!updatedUser.getId().equals(existingUser.getId())) {
-			System.out.println(" u "+updatedUser.getId()+" e "+existingUser.getId());
-			throw new UserException("you can't update another user"); 
-		}
-
-		// Save the user first to ensure it's updated
 		User savedUser = repo.save(existingUser);
 
 		// Only update related models if relevant fields have changed

@@ -94,7 +94,6 @@ public class CommentsServiceImplement implements CommentService {
 		userDto.setUserImage(user.getImage());
 		
 		comment.getLikedByUsers().add(userDto);
-		System.out.println(("like ------- "+" ------ "+comment));
 		return repo.save(comment);
 		
 	}

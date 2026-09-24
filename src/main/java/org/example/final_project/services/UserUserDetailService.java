@@ -30,7 +30,6 @@ public class UserUserDetailService implements UserDetailsService {
 
 			List<GrantedAuthority> authorities=new ArrayList<>();
 
-			System.out.println("errrrr ----------- "+ username);
 			
 			return new User(user.getEmail(), user.getPassword(), authorities);
 		}

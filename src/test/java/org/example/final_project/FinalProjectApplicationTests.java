@@ -144,6 +144,48 @@ class FinalProjectApplicationTests {
     }
 
     @Test
+    void accountEndpointsValidateInputAndIgnoreForgedOwnershipFields() throws Exception {
+        Account owner = signup();
+        Account other = signup();
+
+        var publicProfile = request(owner, HttpMethod.GET, "/api/users/id/" + other.id(), null, String.class);
+        assertEquals(HttpStatus.OK, publicProfile.getStatusCode());
+        var publicJson = objectMapper.readTree(publicProfile.getBody());
+        assertFalse(publicJson.has("email"));
+        assertFalse(publicJson.has("mobile"));
+        assertFalse(publicJson.has("password"));
+        assertFalse(publicJson.has("savedPost"));
+
+        var invalidSignup = http.postForEntity("/signup",
+                Map.of("username", "x", "email", "not-an-email", "name", "", "password", "short"), String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, invalidSignup.getStatusCode());
+
+        var forgedPost = request(owner, HttpMethod.POST, "/api/posts/create",
+                Map.of("id", 999_999L, "caption", "safe", "image", "https://example.test/image.png",
+                        "user", Map.of("id", other.id())), Post.class);
+        assertEquals(HttpStatus.CREATED, forgedPost.getStatusCode());
+        assertNotEquals(999_999L, forgedPost.getBody().getId());
+        assertEquals(owner.id(), forgedPost.getBody().getUser().getId());
+
+        var forgedStory = request(owner, HttpMethod.POST, "/api/stories/create",
+                Map.of("id", 999_998L, "image", "https://example.test/story.png",
+                        "userDto", Map.of("id", other.id())), String.class);
+        assertEquals(HttpStatus.OK, forgedStory.getStatusCode());
+        var storyJson = objectMapper.readTree(forgedStory.getBody());
+        assertNotEquals(999_998L, storyJson.get("id").asLong());
+        assertEquals(owner.id(), storyJson.get("userDto").get("id").asLong());
+
+        var changedProfile = request(owner, HttpMethod.PUT, "/api/users/account/edit",
+                Map.of("id", other.id(), "name", "Updated name"), String.class);
+        assertEquals(HttpStatus.OK, changedProfile.getStatusCode());
+        var accountJson = objectMapper.readTree(changedProfile.getBody());
+        assertEquals(owner.id(), accountJson.get("id").asLong());
+        assertEquals("Updated name", accountJson.get("name").asText());
+        assertTrue(accountJson.has("email"));
+        assertFalse(accountJson.has("password"));
+    }
+
+    @Test
     void realWebSocketPreservesAuthenticatedPrincipalAndDeliversPrivateMessage() throws Exception {
         Account sender = signup();
         Account receiver = signup();

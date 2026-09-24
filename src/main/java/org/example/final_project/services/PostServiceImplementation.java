@@ -2,6 +2,7 @@ package org.example.final_project.services;
 
 
 import org.example.final_project.dtos.UserDto;
+import org.example.final_project.dtos.CreatePostRequest;
 import org.example.final_project.exceptions.PostException;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Post;
@@ -33,7 +34,7 @@ public class PostServiceImplementation implements PostService {
 	
 	
 	@Override
-	public Post createPost(Post post, Long userId) throws UserException {
+	public Post createPost(CreatePostRequest request, Long userId) throws UserException {
 		
 		User user = userService.findUserById(userId);
 		
@@ -45,8 +46,11 @@ public class PostServiceImplementation implements PostService {
 		userDto.setName(user.getName());
 		userDto.setUserImage(user.getImage());
 		
+		Post post = new Post();
+		post.setCaption(request.getCaption());
+		post.setImage(request.getImage());
+		post.setLocation(request.getLocation());
 		post.setUser(userDto);
-		
 		post.setCreatedAt(LocalDateTime.now());
 		
 			Post createdPost =postRepo.save(post);
@@ -139,9 +143,7 @@ public class PostServiceImplementation implements PostService {
 		Post post =findePostById(postId);
 		
 		User user=userService.findUserById(userId);
-		System.out.println(post.getUser().getId()+" ------ "+user.getId());
 		if(post.getUser().getId().equals(user.getId())) {
-			System.out.println("inside delete");
 			postRepo.deleteById(postId);
 		
 		return "Post Deleted Successfully";

@@ -3,6 +3,7 @@ package org.example.final_project.controllers;
 
 import org.example.final_project.exceptions.PostException;
 import org.example.final_project.exceptions.UserException;
+import org.example.final_project.dtos.CreatePostRequest;
 import org.example.final_project.models.Post;
 import org.example.final_project.models.User;
 import org.example.final_project.responses.MessageResponse;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -26,13 +28,9 @@ public class PostController {
 	private UserService userService;
 
 	@PostMapping("/create")
-	public ResponseEntity<Post> createPostHandler(@RequestBody Post post, @RequestHeader("Authorization") String token) throws UserException {
-
-		System.out.println("create post ---- "+post.getCaption());
-
+	public ResponseEntity<Post> createPostHandler(@Valid @RequestBody CreatePostRequest request, @RequestHeader("Authorization") String token) throws UserException {
 		User user=userService.findUserProfile(token);
-
-		Post createdPost = postService.createPost(post, user.getId());
+		Post createdPost = postService.createPost(request, user.getId());
 
 		return new ResponseEntity<Post>(createdPost, HttpStatus.CREATED);
 	}
@@ -52,7 +50,6 @@ public class PostController {
 	@GetMapping("/following/{userIds}")
 	public ResponseEntity<List<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Long> userIds) throws PostException, UserException {
 
-		System.out.println("post userIds ----- "+userIds);
 		List<Post> posts=postService.findAllPostByUserIds(userIds);
 
 		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);

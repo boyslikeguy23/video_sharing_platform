@@ -2,6 +2,7 @@ package org.example.final_project.services;
 
 
 import org.example.final_project.dtos.UserDto;
+import org.example.final_project.dtos.CreateStoryRequest;
 import org.example.final_project.exceptions.StoryException;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Story;
@@ -27,7 +28,7 @@ public class StoryServiceImplementation implements StoryService {
 	private UserRepository userRepo;
 
 	@Override
-	public Story createStory(Story story, Long userId) throws UserException {
+	public Story createStory(CreateStoryRequest request, Long userId) throws UserException {
 		
 		User user = userService.findUserById(userId);
 	
@@ -39,6 +40,9 @@ public class StoryServiceImplementation implements StoryService {
 		userDto.setName(user.getName());
 		userDto.setUserImage(user.getImage());
 		
+		Story story = new Story();
+		story.setImage(request.getImage());
+		story.setCaptions(request.getCaptions());
 		story.setUserDto(userDto);
 		story.setTimestamp(LocalDateTime.now());
 		

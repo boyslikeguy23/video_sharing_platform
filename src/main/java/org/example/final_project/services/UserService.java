@@ -3,13 +3,15 @@ package org.example.final_project.services;
 
 
 import org.example.final_project.exceptions.UserException;
+import org.example.final_project.dtos.RegistrationRequest;
+import org.example.final_project.dtos.UpdateUserRequest;
 import org.example.final_project.models.User;
 
 import java.util.List;
 
 public interface UserService {
 	
-	public User registerUser(User user) throws UserException;
+	public User registerUser(RegistrationRequest request) throws UserException;
 	
 	public User findUserById(Long userId) throws UserException;
 	
@@ -33,7 +35,7 @@ public interface UserService {
 
 	public List<User> getFollowerUsers(Long userId);
 
-	public User updateUserDetails(User updatedUser, User existingUser) throws UserException;
+	public User updateUserDetails(UpdateUserRequest updatedUser, User existingUser) throws UserException;
 	
 	
 }

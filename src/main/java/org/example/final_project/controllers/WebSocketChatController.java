@@ -52,7 +52,6 @@ public class WebSocketChatController {
 
     @MessageMapping("/chat.delete")
     public void deleteMessage(@Payload String messageIdStr, Principal principal) {
-        System.out.println("WS DELETE: messageIdStr=" + messageIdStr);
         Long messageId = Long.valueOf(messageIdStr);
         Long userId = Long.valueOf(principal.getName());
 
