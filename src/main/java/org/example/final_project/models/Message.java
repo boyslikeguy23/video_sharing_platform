@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "messages")
+@Table(name = "messages", indexes = {
+        @Index(name = "idx_messages_conversation", columnList = "sender_id, receiver_id, sentAt DESC, id DESC")
+})
 public class Message {
     // Getters and Setters
     @Id

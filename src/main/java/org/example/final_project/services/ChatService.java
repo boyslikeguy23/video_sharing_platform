@@ -1,6 +1,8 @@
 package org.example.final_project.services;
 
 import org.example.final_project.dtos.RecentChatDto;
+import org.example.final_project.dtos.CursorPage;
+import org.example.final_project.dtos.ChatMessageResponse;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
 import org.example.final_project.models.User;
@@ -10,7 +12,10 @@ import java.util.List;
 public interface ChatService {
     Message sendMessage(Long senderId, Long receiverId, String content) throws UserException;
 
+    /** Internal full conversation for the bulk read operation; HTTP history uses getConversationPage. */
     List<Message> getConversation(Long userId1, Long userId2);
+
+    CursorPage<ChatMessageResponse> getConversationPage(Long currentUserId, Long peerId, int size, String cursor);
 
     List<User> getRecentChats(Long userId);
 

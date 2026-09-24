@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name="posts")
+@Table(name="posts", indexes = {
+        @Index(name = "idx_posts_feed", columnList = "createdAt DESC, id DESC"),
+        @Index(name = "idx_posts_author_feed", columnList = "user_id, createdAt DESC, id DESC")
+})
 public class Post {
 
 	@Id

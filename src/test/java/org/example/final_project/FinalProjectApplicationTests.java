@@ -1,10 +1,16 @@
 package org.example.final_project;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import org.example.final_project.models.Comments;
 import org.example.final_project.models.Post;
 import org.example.final_project.models.User;
+import org.example.final_project.models.Message;
+import org.example.final_project.dtos.UserDto;
+import org.example.final_project.repositories.PostRepository;
+import org.example.final_project.repositories.MessageRepository;
+import org.example.final_project.repositories.UserRepository;
 import org.example.final_project.dtos.ChatMessageResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -25,6 +31,12 @@ import org.springframework.messaging.simp.user.SimpUserRegistry;
 import java.lang.reflect.Type;
 import java.security.SecureRandom;
 import java.sql.DriverManager;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.IntStream;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +58,9 @@ class FinalProjectApplicationTests {
     @Autowired TestRestTemplate http;
     @Autowired ObjectMapper objectMapper;
     @Autowired SimpUserRegistry userRegistry;
+    @Autowired PostRepository paginationPosts;
+    @Autowired MessageRepository paginationMessages;
+    @Autowired UserRepository paginationUsers;
     @LocalServerPort int port;
 
     private static String env(String name, String fallback) {
@@ -220,6 +235,187 @@ class FinalProjectApplicationTests {
             if (receiverSession != null && receiverSession.isConnected()) receiverSession.disconnect();
             client.stop();
         }
+    }
+
+    @Test
+    void feedUsesStableCursorAcrossTimestampTiesInsertionsAndDeletedBoundary() throws Exception {
+        Account author = signup();
+        List<Post> posts = seedPosts(author, 45);
+        List<Long> expected = posts.stream().sorted(Comparator.comparing(Post::getCreatedAt).reversed()
+                .thenComparing(Post::getId, Comparator.reverseOrder())).map(Post::getId).toList();
+
+        // These timestamps are later than other test fixtures, so the global feed starts with this author.
+        JsonNode global = page(author, "/api/posts/");
+        assertEquals(20, global.get("items").size());
+        assertEquals(expected.subList(0, 20), ids(global));
+        assertTrue(global.get("hasMore").asBoolean());
+
+        String path = "/api/posts/all/" + author.id();
+        JsonNode first = page(author, path);
+        List<Long> seen = new ArrayList<>(ids(first));
+        String cursor = first.get("nextCursor").asText();
+        Long boundaryId = seen.get(seen.size() - 1);
+
+        Post newPost = postFixture(author, LocalDateTime.of(2099, 1, 1, 0, 0));
+        paginationPosts.saveAndFlush(newPost);
+        paginationPosts.deleteById(boundaryId);
+        // The boundary is carried in the cursor, so deleting that row cannot invalidate the next page.
+        for (int requests = 0; requests < 5; requests++) {
+            JsonNode next = page(author, path + "?cursor=" + cursor);
+            seen.addAll(ids(next));
+            if (!next.get("hasMore").asBoolean()) {
+                assertTrue(next.get("nextCursor").isNull());
+                break;
+            }
+            cursor = next.get("nextCursor").asText();
+        }
+        assertEquals(expected, seen);
+        assertEquals(seen.size(), new HashSet<>(seen).size());
+        assertFalse(seen.contains(newPost.getId()));
+        assertEquals(newPost.getId(), ids(page(author, path)).get(0));
+
+        // Author filtering remains applied to every cursor page.
+        assertEquals(ids(page(author, path + "?size=100")),
+                ids(page(author, "/api/posts/following/" + author.id() + "?size=100")));
+    }
+
+    @Test
+    void postPaginationSupportsEmptyResultsMinimumSizeAndLegacyNullTimestamps() throws Exception {
+        Account author = signup();
+        String path = "/api/posts/all/" + author.id();
+        JsonNode empty = page(author, path);
+        assertTrue(empty.get("items").isEmpty());
+        assertFalse(empty.get("hasMore").asBoolean());
+        assertTrue(empty.get("nextCursor").isNull());
+
+        Post dated = paginationPosts.saveAndFlush(postFixture(author, LocalDateTime.of(2090, 1, 1, 0, 0)));
+        Post legacy1 = paginationPosts.saveAndFlush(postFixture(author, null));
+        Post legacy2 = paginationPosts.saveAndFlush(postFixture(author, null));
+        List<Long> seen = new ArrayList<>();
+        String cursor = null;
+        for (int i = 0; i < 3; i++) {
+            JsonNode result = page(author, path + "?size=1" + (cursor == null ? "" : "&cursor=" + cursor));
+            assertEquals(1, result.get("items").size());
+            seen.addAll(ids(result));
+            if (i < 2) {
+                assertTrue(result.get("hasMore").asBoolean());
+                cursor = result.get("nextCursor").asText();
+            } else {
+                assertFalse(result.get("hasMore").asBoolean());
+                assertTrue(result.get("nextCursor").isNull());
+            }
+        }
+        assertEquals(List.of(dated.getId(), legacy2.getId(), legacy1.getId()), seen);
+    }
+
+    @Test
+    void conversationPagesStayPrivateAndBulkReadStillCoversTheWholeConversation() throws Exception {
+        Account owner = signup();
+        Account peer = signup();
+        Account outsider = signup();
+        List<Message> messages = seedMessages(owner, peer, 65);
+        List<Long> expected = messages.stream().sorted(Comparator.comparing(Message::getSentAt).reversed()
+                .thenComparing(Message::getId, Comparator.reverseOrder())).map(Message::getId).toList();
+        String path = "/api/messages/conversation/" + peer.id();
+
+        JsonNode first = page(owner, path);
+        assertEquals(30, first.get("items").size());
+        assertEquals(expected.subList(0, 30), ids(first));
+        assertTrue(first.get("hasMore").asBoolean());
+        String cursor = first.get("nextCursor").asText();
+
+        JsonNode foreign = page(outsider, path + "?cursor=" + cursor + "&userId1=" + owner.id());
+        assertTrue(foreign.get("items").isEmpty());
+        assertTrue(foreign.get("nextCursor").isNull());
+        assertEquals(HttpStatus.UNAUTHORIZED, http.getForEntity(path + "?cursor=" + cursor, String.class).getStatusCode());
+
+        Message newest = messageFixture(owner, peer, LocalDateTime.of(2099, 1, 1, 0, 0));
+        paginationMessages.saveAndFlush(newest);
+        paginationMessages.deleteById(ids(first).get(29));
+        JsonNode second = page(owner, path + "?cursor=" + cursor);
+        assertEquals(expected.subList(30, 60), ids(second));
+        JsonNode third = page(owner, path + "?cursor=" + second.get("nextCursor").asText());
+        assertEquals(expected.subList(60, 65), ids(third));
+        assertFalse(third.get("hasMore").asBoolean());
+        assertTrue(third.get("nextCursor").isNull());
+        assertEquals(newest.getId(), ids(page(owner, path)).get(0));
+
+        // Both directions share the same conversation, but no other participant pair is visible.
+        assertEquals(ids(page(owner, path + "?size=100")),
+                ids(page(peer, "/api/messages/conversation/" + owner.id() + "?size=100")));
+        seedMessages(outsider, peer, 2);
+        JsonNode outsiderPage = page(outsider, path + "?size=100");
+        assertEquals(2, outsiderPage.get("items").size());
+        assertTrue(ids(outsiderPage).stream().noneMatch(expected::contains));
+
+        assertEquals(HttpStatus.OK, request(peer, HttpMethod.PUT, "/api/messages/read-all/" + owner.id(),
+                null, String.class).getStatusCode());
+        List<Message> persisted = paginationMessages.findConversation(owner.id(), peer.id());
+        assertTrue(persisted.stream().filter(m -> m.getReceiver().getId().equals(peer.id())).allMatch(Message::isRead));
+        assertTrue(persisted.stream().filter(m -> m.getReceiver().getId().equals(owner.id())).noneMatch(Message::isRead));
+        assertEquals(2, paginationMessages.findConversation(outsider.id(), peer.id()).size());
+        assertTrue(paginationMessages.findConversation(outsider.id(), peer.id()).stream().noneMatch(Message::isRead));
+    }
+
+    @Test
+    void paginationRejectsInvalidSizesAndCursorsAcrossAllListEndpoints() {
+        Account account = signup();
+        List<String> paths = List.of("/api/posts/", "/api/posts/all/" + account.id(),
+                "/api/posts/following/" + account.id(), "/api/messages/conversation/" + account.id());
+        String invalidVersion = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("v2|1|2090-01-01T00:00".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        for (String path : paths) {
+            for (String query : List.of("size=0", "size=-1", "size=101", "size=2147483647", "size=abc",
+                    "cursor=", "cursor=bad!", "cursor=" + invalidVersion, "cursor=" + "a".repeat(161))) {
+                assertEquals(HttpStatus.BAD_REQUEST,
+                        request(account, HttpMethod.GET, path + "?" + query, null, String.class).getStatusCode(), path + "?" + query);
+            }
+            assertEquals(HttpStatus.UNAUTHORIZED, http.getForEntity(path, String.class).getStatusCode());
+        }
+    }
+
+    private JsonNode page(Account account, String path) throws Exception {
+        var result = request(account, HttpMethod.GET, path, null, String.class);
+        assertEquals(HttpStatus.OK, result.getStatusCode(), result.getBody());
+        return objectMapper.readTree(result.getBody());
+    }
+
+    private List<Long> ids(JsonNode page) {
+        List<Long> ids = new ArrayList<>();
+        page.get("items").forEach(item -> ids.add(item.get("id").asLong()));
+        return ids;
+    }
+
+    private Post postFixture(Account author, LocalDateTime time) {
+        Post post = new Post();
+        UserDto user = new UserDto();
+        user.setId(author.id());
+        user.setName("Pagination author");
+        post.setUser(user);
+        post.setImage("https://example.test/pagination.png");
+        post.setCaption("Pagination fixture");
+        post.setCreatedAt(time);
+        return post;
+    }
+
+    private List<Post> seedPosts(Account author, int count) {
+        return paginationPosts.saveAllAndFlush(IntStream.range(0, count)
+                .mapToObj(i -> postFixture(author, LocalDateTime.of(2095, 1, 1, 0, 0).plusSeconds(i / 3))).toList());
+    }
+
+    private Message messageFixture(Account sender, Account receiver, LocalDateTime time) {
+        Message message = new Message();
+        message.setSender(paginationUsers.getReferenceById(sender.id()));
+        message.setReceiver(paginationUsers.getReferenceById(receiver.id()));
+        message.setContent("Pagination message");
+        message.setSentAt(time);
+        return message;
+    }
+
+    private List<Message> seedMessages(Account first, Account second, int count) {
+        return paginationMessages.saveAllAndFlush(IntStream.range(0, count).mapToObj(i ->
+                messageFixture(i % 2 == 0 ? first : second, i % 2 == 0 ? second : first,
+                        LocalDateTime.of(2095, 1, 1, 0, 0).plusSeconds(i / 3))).toList());
     }
 
     private StompSession connect(WebSocketStompClient client, Account account) throws Exception {

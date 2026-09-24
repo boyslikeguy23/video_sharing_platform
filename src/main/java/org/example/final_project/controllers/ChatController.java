@@ -3,8 +3,8 @@ package org.example.final_project.controllers;
 import org.example.final_project.dtos.ChatMessageDeletedEvent;
 import org.example.final_project.dtos.ChatMessageRequest;
 import org.example.final_project.dtos.ChatMessageResponse;
+import org.example.final_project.dtos.CursorPage;
 import org.example.final_project.dtos.RecentChatDto;
-import org.example.final_project.dtos.UserDto;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
 import org.example.final_project.models.User;
@@ -13,8 +13,6 @@ import org.example.final_project.services.ChatService;
 import org.example.final_project.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,18 +49,14 @@ public class ChatController {
     }
 
     @GetMapping("/conversation/{userId}")
-    public ResponseEntity<List<ChatMessageResponse>> getConversation(
+    public ResponseEntity<CursorPage<ChatMessageResponse>> getConversation(
             @RequestHeader("Authorization") String token,
-            @PathVariable Long userId) throws UserException {
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "30") int size,
+            @RequestParam(required = false) String cursor) throws UserException {
 
         User currentUser = userService.findUserProfile(token);
-        List<Message> messages = chatService.getConversation(currentUser.getId(), userId);
-
-        List<ChatMessageResponse> response = messages.stream()
-                .map(ChatMessageResponse::fromMessage)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(chatService.getConversationPage(currentUser.getId(), userId, size, cursor));
     }
 
     @GetMapping("/recent")

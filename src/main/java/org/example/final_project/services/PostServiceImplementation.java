@@ -3,6 +3,9 @@ package org.example.final_project.services;
 
 import org.example.final_project.dtos.UserDto;
 import org.example.final_project.dtos.CreatePostRequest;
+import org.example.final_project.dtos.CursorPage;
+import org.example.final_project.utils.CursorPagination;
+import org.springframework.data.domain.PageRequest;
 import org.example.final_project.exceptions.PostException;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Post;
@@ -61,13 +64,8 @@ public class PostServiceImplementation implements PostService {
 
 	
 	@Override
-	public List<Post> findPostByUserId(Long userId) throws UserException {
-		
-		List<Post> posts=postRepo.findByUserId(userId);
-		if(posts.isEmpty()){
-			throw new UserException("No posts found");
-		}
-		return posts;
+	public CursorPage<Post> findPostByUserId(Long userId, int size, String cursor) {
+		return findAllPostByUserIds(List.of(userId), size, cursor);
 	}
 
 
@@ -82,12 +80,11 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public List<Post> findAllPost() throws PostException {
-		List<Post> posts = postRepo.findAll();
-		if(!posts.isEmpty()) {
-			return posts;
-		}
-		throw new PostException("Post Not Exist");
+	public CursorPage<Post> findAllPost(int size, String cursor) {
+		var boundary = CursorPagination.parse(size, cursor);
+		List<Post> posts = postRepo.findFeedPage(boundary.firstPage(), boundary.time(), boundary.id(),
+				boundary.nullTime(), PageRequest.of(0, size + 1));
+		return CursorPagination.page(posts, size, Post::getCreatedAt, Post::getId, post -> post);
 	}
 
 
@@ -156,17 +153,11 @@ public class PostServiceImplementation implements PostService {
 
 
 	@Override
-	public List<Post> findAllPostByUserIds(List<Long> userIds) throws PostException, UserException {
-		
-		
-		List<Post> posts= postRepo.findAllPostByUserIds(userIds);
-		
-		if(posts.isEmpty()) {
-			throw new PostException("No Post Available of your followings");
-		}
-		
-		
-		return posts;
+	public CursorPage<Post> findAllPostByUserIds(List<Long> userIds, int size, String cursor) {
+		var boundary = CursorPagination.parse(size, cursor);
+		List<Post> posts = userIds.isEmpty() ? List.of() : postRepo.findAuthorsPage(userIds,
+				boundary.firstPage(), boundary.time(), boundary.id(), boundary.nullTime(), PageRequest.of(0, size + 1));
+		return CursorPagination.page(posts, size, Post::getCreatedAt, Post::getId, post -> post);
 	}
 
 

@@ -48,6 +48,38 @@ Optional environment variables: `DB_HOST` (default `localhost`), `DB_PORT` (defa
 - Public user endpoints return only public profile fields and follower/following counts. Email, mobile number, saved posts, and password are never returned there. `GET /api/users/req` and signup responses include the account owner's email and mobile number.
 - Create post and story endpoints accept only their editable content fields. Any client-supplied ID, author, timestamp, likes, comments, or story owner is ignored; the server supplies these values from the authenticated account.
 
+## Feed and conversation pagination
+
+These GET endpoints now return a page object instead of a bare JSON array:
+
+| Endpoint | Default size | Order |
+| --- | --- | --- |
+| `/api/posts` or `/api/posts/` | 20 | `createdAt` descending, then `id` descending |
+| `/api/posts/all/{userId}` | 20 | Same as the feed, filtered by author |
+| `/api/posts/following/{userIds}` | 20 | Same as the feed, filtered by the supplied comma-separated author IDs |
+| `/api/messages/conversation/{userId}` | 30 | `sentAt` descending, then `id` descending |
+
+All four endpoints accept `size` (1 through 100) and an optional `cursor`. The database fetches at most `size + 1` rows to detect whether another page exists, and the response contains at most `size` items. No full result count is queried.
+
+1. Start with `GET /api/posts/?size=20` or `GET /api/messages/conversation/42?size=30`, using the Bearer token.
+2. Read the records from `response.items`.
+3. When `response.hasMore` is true, send the returned `response.nextCursor` as the `cursor` query parameter on the same endpoint with the same author/peer filters.
+4. Stop when `hasMore` is false and `nextCursor` is null. Omit the cursor to refresh from the newest records.
+
+An empty result is HTTP 200 with this body:
+
+```json
+{"items": [], "hasMore": false, "nextCursor": null}
+```
+
+**Frontend compatibility:** update list consumers to read `items` rather than treating the response itself as an array. Chat previously returned all messages oldest first; it now returns the newest batch first. For an oldest-to-newest chat view, reverse each batch for display and prepend subsequent older batches. Use message IDs to deduplicate messages also received over WebSocket.
+
+Cursors carry the last record's timestamp and ID. Newer inserts do not shift the next page, timestamp ties use the ID, and a deleted boundary row does not invalidate the cursor. This is not a database snapshot: records deleted before they are fetched will no longer appear. Legacy posts without a creation timestamp sort after dated posts. Invalid sizes or malformed cursors return HTTP 400; anonymous requests return HTTP 401. The conversation participant is always resolved from the authenticated token, so another user's cursor does not grant access to their messages. An empty conversation with the requested peer returns an empty page.
+
+The `read-all` endpoint continues to mark all incoming messages from that peer, including messages older than the currently loaded page. Index definitions for feed timestamps/IDs and conversation participants/timestamps/IDs are included in the entity mappings and are created by the configured schema update on application startup.
+
+Integration tests exercise cursor traversal, equal timestamps, new inserts, deleted boundaries, legacy null timestamps, empty results, invalid inputs, private conversation access, and bulk read receipts beyond one page.
+
 ## Tests
 
 Run the security regression tests without PostgreSQL:

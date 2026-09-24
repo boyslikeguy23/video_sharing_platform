@@ -4,6 +4,7 @@ package org.example.final_project.controllers;
 import org.example.final_project.exceptions.PostException;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.dtos.CreatePostRequest;
+import org.example.final_project.dtos.CursorPage;
 import org.example.final_project.models.Post;
 import org.example.final_project.models.User;
 import org.example.final_project.responses.MessageResponse;
@@ -38,29 +39,24 @@ public class PostController {
 
 
 	@GetMapping("/all/{userId}")
-	public ResponseEntity<List<Post>> findPostByUserIdHandler(@PathVariable("userId") Long userId) throws UserException{
-
-		List<Post> posts=postService.findPostByUserId(userId);
-
-		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	public ResponseEntity<CursorPage<Post>> findPostByUserIdHandler(@PathVariable("userId") Long userId,
+			@RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String cursor) {
+		return ResponseEntity.ok(postService.findPostByUserId(userId, size, cursor));
 	}
 
 
 
 	@GetMapping("/following/{userIds}")
-	public ResponseEntity<List<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Long> userIds) throws PostException, UserException {
-
-		List<Post> posts=postService.findAllPostByUserIds(userIds);
-
-		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	public ResponseEntity<CursorPage<Post>> findAllPostByUserIds(@PathVariable("userIds") List<Long> userIds,
+			@RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String cursor) {
+		return ResponseEntity.ok(postService.findAllPostByUserIds(userIds, size, cursor));
 	}
 
 
-	@GetMapping("/")
-	public ResponseEntity<List<Post>> findAllPostHandler() throws PostException{
-		List<Post> posts=postService.findAllPost();
-
-		return new ResponseEntity<List<Post>>(posts,HttpStatus.OK);
+	@GetMapping({"", "/"})
+	public ResponseEntity<CursorPage<Post>> findAllPostHandler(@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String cursor) {
+		return ResponseEntity.ok(postService.findAllPost(size, cursor));
 	}
 
 	@GetMapping("/{postId}")

@@ -2,6 +2,10 @@ package org.example.final_project.services;
 
 import jakarta.transaction.Transactional;
 import org.example.final_project.dtos.RecentChatDto;
+import org.example.final_project.dtos.CursorPage;
+import org.example.final_project.dtos.ChatMessageResponse;
+import org.example.final_project.utils.CursorPagination;
+import org.springframework.data.domain.PageRequest;
 import org.example.final_project.exceptions.UserException;
 import org.example.final_project.models.Message;
 import org.example.final_project.models.User;
@@ -54,6 +58,16 @@ public class ChatServiceImplementation implements ChatService{
     @Override
     public List<Message> getConversation(Long userId1, Long userId2) {
         return messageRepository.findConversation(userId1, userId2);
+    }
+
+    @Override
+    public CursorPage<ChatMessageResponse> getConversationPage(Long currentUserId, Long peerId, int size, String cursor) {
+        var boundary = CursorPagination.parse(size, cursor);
+        if (boundary.nullTime()) throw new IllegalArgumentException("Invalid conversation cursor");
+        var messages = messageRepository.findConversationPage(currentUserId, peerId, boundary.firstPage(),
+                boundary.time(), boundary.id(), PageRequest.of(0, size + 1));
+        return CursorPagination.page(messages, size, Message::getSentAt, Message::getId,
+                ChatMessageResponse::fromMessage);
     }
 
 
